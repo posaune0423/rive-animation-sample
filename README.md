@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# rive-animation-sample
 
-## Getting Started
+A proof of concept for live-streaming gift effects rendered with [Rive](https://rive.app):
+twelve gifts in five price tiers, a queue that never overlaps full-screen effects, and
+measurements of file size, load time and frame pacing.
 
-First, run the development server:
+The `.riv` files are **generated from TypeScript** (`rive/`) — no Rive editor involved — so the
+web side can be built and load-tested before designer assets exist. See
+[`docs/riv-format.md`](docs/riv-format.md) for how, and [`docs/gift-spec.md`](docs/gift-spec.md)
+for what the effects do.
+
+## Stack
+
+Next.js 16 (App Router) · React 19 · Bun · TypeScript (`tsgo`) · Tailwind v4 + shadcn/ui ·
+oxlint · oxfmt · Vitest 5 · Playwright · lefthook · t3-env + valibot · `@rive-app/react-webgl2`
+
+## Run
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+bun run riv:build   # regenerate public/rive/*.riv, public/gifts/*.svg and the self-hosted wasm
+bun dev             # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The page is a portrait live-stream mock. Tap **ギフトを送る**, pick a gift; hearts/kisses send
+on tap, everything else asks once. The HUD (top right) shows fps, queue state and load metrics and
+has buttons for spamming hearts, sending all twelve gifts and switching the queue policy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To try it on a phone: `bun dev --hostname 0.0.0.0` and open `http://<your-ip>:3000`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`/lab?src=/rive/candy.riv&w=192&h=192&loop=1` plays a single file on a plain background — handy
+for reviewing one effect or bisecting a rendering problem.
 
-## Learn More
+## Check
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun run check   # oxfmt --check, oxlint, tsgo, vitest
+bun run e2e     # Playwright: builds, starts on :3100, runs e2e/*.spec.ts, writes reports/metrics.md
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vitest loads every generated `.riv` headlessly with `@rive-app/canvas-advanced`, fires the `play`
+trigger and asserts that `finished` is reported at the tier's duration. Playwright drives the real
+UI on an iPhone-14 viewport and records metrics (see `reports/metrics.md` after a run).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Layout
 
-## Deploy on Vercel
+```
+rive/                 generator: writer (binary/scene/timeline → .riv + .svg), 12 gift definitions,
+                      catalog (shared with the app), build script, manifest.json
+public/rive, gifts/   generated output (committed; `riv:build` is deterministic)
+src/features/gift/    scheduler (pure reducer), GiftProvider (preload + pool), RiveGiftEffect
+                      (one Rive instance per lane×gift), stage/chat/sheet UI, DebugHud, metrics
+e2e/                  Playwright specs (flow, queue policies, performance report)
+docs/                 format notes and the effect spec
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Design notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- One `.riv` per gift, parsed once (`RiveFile`), one pooled Rive instance per lane × gift that is
+  replayed by firing the state-machine trigger; all instances share one WebGL2 context
+  (`useOffscreenRenderer`). Idle timelines are one-shot so the runtime self-pauses.
+- `rive.wasm` is self-hosted at the version the React runtime pins and compiled before the first
+  effect is requested (`RuntimeLoader.setWasmUrl` + `awaitInstance`).
+- Full-frame effects keep the streamer's face visible; the build fails if a resting shape covers it.
+
+## Environment
+
+Copy `.env.example` to `.env.local` to change the HUD, queue policy or T2 queue limit.
