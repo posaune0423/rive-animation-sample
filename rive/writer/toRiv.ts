@@ -10,7 +10,14 @@ import {
   TYPE,
   type FieldType,
 } from './keys'
-import { assertUniqueIds, ROOT_ID, walk, type Paint, type Scene, type SceneNode } from './scene'
+import {
+  assertUniqueIds,
+  ROOT_ID,
+  type GroupNode,
+  type Paint,
+  type Scene,
+  type SceneNode,
+} from './scene'
 import { easeKey, isCubic, type AnimProp, type Ease, type Timeline } from './timeline'
 
 type PropDef = { readonly key: number; readonly type: FieldType }
@@ -89,7 +96,9 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
   }
 
   // ---- scene graph ---------------------------------------------------------
-  for (const { node, parent } of walk(scene.root)) {
+  // Rive draws the first-listed sibling on top (editor hierarchy order). Scenes are authored in
+  // painter's order (later on top, like SVG), so siblings are emitted reversed.
+  for (const { node, parent } of walkDrawOrder(scene.root)) {
     const parentIdx = parent ? (nodeIndex.get(parent.id) as number) : 0
     const idx = nextComponent()
     nodeIndex.set(node.id, idx)
@@ -268,8 +277,17 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
     [PROP.duration, Math.round(play.duration * play.fps)],
     [PROP.loop, LOOP.oneShot],
   ])
+  // Idle parks root.opacity at 0 and keyed values persist across state changes, so play must
+  // restore it unless the author keys root opacity themselves.
+  const keysRootOpacity = play.tracks.some(t => t.target === ROOT_ID && t.prop === 'opacity')
+  const tracks: Timeline['tracks'] = keysRootOpacity
+    ? play.tracks
+    : [
+        { target: ROOT_ID, prop: 'opacity', keys: [{ time: 0, value: 1, ease: 'hold' }] },
+        ...play.tracks,
+      ]
   const byObject = new Map<number, Array<{ key: number; track: Timeline['tracks'][number] }>>()
-  for (const track of play.tracks) {
+  for (const track of tracks) {
     const { objectId, key } = resolveTarget(track.target, track.prop)
     const list = byObject.get(objectId) ?? []
     list.push({ key, track })
@@ -331,6 +349,16 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
   ])
 
   return serialize(objects)
+}
+
+function* walkDrawOrder(
+  node: SceneNode,
+  parent: GroupNode | null = null,
+): Generator<{ node: SceneNode; parent: GroupNode | null }> {
+  yield { node, parent }
+  if (node.kind === 'group') {
+    for (const child of node.children.toReversed()) yield* walkDrawOrder(child, node)
+  }
 }
 
 const serialize = (objects: readonly RivObject[]): Uint8Array => {

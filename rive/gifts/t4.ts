@@ -142,7 +142,7 @@ export const diamond: GiftDefinition = {
       const t = edgeLightKeys(timeline('play', DUR))
       // 映像枠の外から、中央を透かして横切り、反対側へ抜ける
       t.keys('gift', 'x', [
-        [0.8, -140, EASE.inOut],
+        [0.8, -140, 'linear'],
         [5.5, W + 140],
       ])
         .keys('gift', 'y', [
