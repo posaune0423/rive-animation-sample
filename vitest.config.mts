@@ -4,7 +4,10 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { '@': new URL('./src', import.meta.url).pathname },
+    alias: {
+      '@rive': new URL('./rive', import.meta.url).pathname,
+      '@': new URL('./src', import.meta.url).pathname,
+    },
   },
   test: {
     environment: 'node',

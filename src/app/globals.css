@@ -128,3 +128,51 @@
     @apply font-sans;
   }
 }
+
+/* ---- gift sample ------------------------------------------------------- */
+
+/* T1: appears a little small and snaps to size (0.15s, spec) */
+@keyframes gift-pop {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-gift-pop {
+  animation: gift-pop 150ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fake-blob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8vw, -6vh, 0) scale(1.15);
+  }
+}
+
+.fake-blob {
+  animation: fake-blob 14s ease-in-out infinite;
+}
+
+.fake-blob-slow {
+  animation: fake-blob 22s ease-in-out infinite reverse;
+}
+
+html[data-face-guide] .face-guide {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gift-pop,
+  .fake-blob,
+  .fake-blob-slow {
+    animation: none;
+  }
+}

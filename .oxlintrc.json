@@ -17,7 +17,11 @@
   "rules": {
     "react/react-in-jsx-scope": "off",
     "react/jsx-no-useless-fragment": "off",
-    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }]
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
+    "nextjs/no-img-element": "off",
+    "no-underscore-dangle": ["warn", { "allow": ["__giftMetrics"] }],
+    "no-await-in-loop": "off",
+    "oxc/no-map-spread": "off"
   },
   "ignorePatterns": [
     ".next",
