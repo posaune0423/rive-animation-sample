@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "jsx-a11y", "nextjs", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "settings": {
+    "react": { "version": "19" }
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-no-useless-fragment": "off",
+    "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }]
+  },
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    "public",
+    "reports",
+    "playwright-report",
+    "test-results",
+    "src/components/ui",
+    "next-env.d.ts"
+  ]
+}

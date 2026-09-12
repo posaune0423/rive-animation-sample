@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 100,
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    "public",
+    "reports",
+    "playwright-report",
+    "test-results",
+    "src/components/ui",
+    "bun.lock",
+    "next-env.d.ts"
+  ]
+}
