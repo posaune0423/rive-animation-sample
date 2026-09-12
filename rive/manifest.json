@@ -1,0 +1,121 @@
+{
+  "wasm": {
+    "file": "/rive/rive-2.42.1.wasm",
+    "version": "2.42.1",
+    "bytes": 2159033
+  },
+  "gifts": [
+    {
+      "id": "heart",
+      "tier": 1,
+      "riv": null,
+      "icon": "/gifts/heart.svg"
+    },
+    {
+      "id": "kiss",
+      "tier": 1,
+      "riv": null,
+      "icon": "/gifts/kiss.svg"
+    },
+    {
+      "id": "candy",
+      "tier": 2,
+      "riv": {
+        "file": "/rive/candy.riv",
+        "bytes": 1150,
+        "shapes": 8
+      },
+      "icon": "/gifts/candy.svg"
+    },
+    {
+      "id": "sparkling",
+      "tier": 2,
+      "riv": {
+        "file": "/rive/sparkling.riv",
+        "bytes": 1829,
+        "shapes": 11
+      },
+      "icon": "/gifts/sparkling.svg"
+    },
+    {
+      "id": "plush",
+      "tier": 2,
+      "riv": {
+        "file": "/rive/plush.riv",
+        "bytes": 926,
+        "shapes": 8
+      },
+      "icon": "/gifts/plush.svg"
+    },
+    {
+      "id": "bouquet",
+      "tier": 3,
+      "riv": {
+        "file": "/rive/bouquet.riv",
+        "bytes": 4372,
+        "shapes": 27
+      },
+      "icon": "/gifts/bouquet.svg"
+    },
+    {
+      "id": "perfume",
+      "tier": 3,
+      "riv": {
+        "file": "/rive/perfume.riv",
+        "bytes": 3052,
+        "shapes": 15
+      },
+      "icon": "/gifts/perfume.svg"
+    },
+    {
+      "id": "ring",
+      "tier": 3,
+      "riv": {
+        "file": "/rive/ring.riv",
+        "bytes": 1320,
+        "shapes": 6
+      },
+      "icon": "/gifts/ring.svg"
+    },
+    {
+      "id": "diamond",
+      "tier": 4,
+      "riv": {
+        "file": "/rive/diamond.riv",
+        "bytes": 2801,
+        "shapes": 14
+      },
+      "icon": "/gifts/diamond.svg"
+    },
+    {
+      "id": "suite",
+      "tier": 4,
+      "riv": {
+        "file": "/rive/suite.riv",
+        "bytes": 5020,
+        "shapes": 32
+      },
+      "icon": "/gifts/suite.svg"
+    },
+    {
+      "id": "palace",
+      "tier": 5,
+      "riv": {
+        "file": "/rive/palace.riv",
+        "bytes": 9813,
+        "shapes": 71
+      },
+      "icon": "/gifts/palace.svg"
+    },
+    {
+      "id": "myth",
+      "tier": 5,
+      "riv": {
+        "file": "/rive/myth.riv",
+        "bytes": 12388,
+        "shapes": 65
+      },
+      "icon": "/gifts/myth.svg"
+    }
+  ]
+}
