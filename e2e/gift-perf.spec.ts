@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 import { GIFTS } from '../rive/catalog'
+import { TIER_FILE_BUDGET_KB } from '../rive/contract'
 import { activeEffect, metrics, openReady, sendViaSheet } from './helpers'
 
 const REPORT_DIR = 'reports'
@@ -13,11 +14,13 @@ test.describe('performance', () => {
     await openReady(page)
     const loaded = await metrics(page)
 
-    // Every .riv is tiny and parsed quickly; wasm is the dominant cost.
+    // Every .riv stays within its tier's file budget (embedded WebP renders included).
     for (const g of GIFTS.filter(x => x.rivSrc)) {
       const f = loaded.files[g.id]
       expect(f, g.id).toBeDefined()
-      expect(f?.bytes ?? Infinity).toBeLessThan(30 * 1024)
+      expect(f?.bytes ?? Infinity, g.id).toBeLessThanOrEqual(
+        TIER_FILE_BUDGET_KB[g.tier as 2 | 3 | 4 | 5] * 1024,
+      )
     }
     expect(loaded.wasm?.loadMs ?? Infinity).toBeLessThan(10_000)
 
