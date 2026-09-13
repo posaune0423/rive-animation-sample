@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 import { randomSender, useGift } from '../GiftProvider'
 import type { ChatRow } from '../types'
 import { LaneEffects } from './LaneEffects'
-import { PinnedSenders } from './PinnedSenders'
 
 const COMMENTS = [
   'かわいい〜',
@@ -25,6 +24,8 @@ const VISIBLE_ROWS = 8
 /**
  * Comments overlaid on the lower-left of the video. Gift rows render here too:
  * T1 = icon pop (+ ×n), T2 = highlighted row with the chatTop Rive slot at the top of the column.
+ * The pinned sender names live at the top of the screen (see LiveScreen), out of the way of the
+ * centred and full-frame effects.
  */
 export const ChatColumn = () => {
   const { state, comment, laneKeyOf } = useGift()
@@ -47,13 +48,16 @@ export const ChatColumn = () => {
   const rows = state.chat.slice(-VISIBLE_ROWS)
   const chatTopActive = state.lanes[laneKeyOf('chatTop')]?.active
   const chatTopJob = chatTopActive?.lane === 'chatTop' ? chatTopActive : null
+  // A full-frame effect (T4/T5) owns the screen: the comment log steps aside for it and comes
+  // back when it ends. The pinned senders and the T2 slot stay — they are part of the gifting.
+  const fullActive = state.lanes[laneKeyOf('full')]?.active
+  const fullFrameJob = fullActive?.lane === 'full' ? fullActive : null
 
   return (
     <div
       className="pointer-events-none absolute bottom-20 left-3 z-10 flex w-[72%] flex-col gap-2"
       data-testid="chat-column"
     >
-      <PinnedSenders />
       <div
         className="flex h-16 items-center gap-2"
         data-lane-slot="chatTop"
@@ -68,7 +72,14 @@ export const ChatColumn = () => {
           </p>
         )}
       </div>
-      <ul className="flex flex-col justify-end gap-1 [mask-image:linear-gradient(to_bottom,transparent,black_18%)]">
+      <ul
+        className={cn(
+          'flex flex-col justify-end gap-1 transition-opacity duration-500 [mask-image:linear-gradient(to_bottom,transparent,black_18%)]',
+          fullFrameJob && 'opacity-0',
+        )}
+        data-testid="chat-log"
+        data-dimmed={fullFrameJob ? 'true' : 'false'}
+      >
         {rows.map(row => (
           <ChatRowView key={row.key} row={row} />
         ))}
