@@ -50,6 +50,7 @@ next-env.d.ts
 # blender scratch
 /art/.tmp
 
-# recordings: raw Playwright output, and the encoded mp4 (uploaded to a GitHub release instead)
+# recordings are build output; the mp4 goes to the PR with `gh pr edit --attach`
 /reports/*.webm
 /reports/*.mp4
+/reports/*.gif
