@@ -49,3 +49,6 @@ next-env.d.ts
 
 # blender scratch
 /art/.tmp
+
+# raw Playwright recordings (the encoded mp4/gif in reports/ are committed)
+/reports/*.webm
