@@ -29,6 +29,23 @@ Twelve gifts, cheapest first, grouped into five price tiers. Prices are in coins
   `NEXT_PUBLIC_T2_QUEUE_MAX` (5) drops the oldest T2; its chat row stays.
 - Pinned senders: max 3, highest tier first, expire after 10/30/60 s.
 
+## Layering
+
+The gift effect is the top layer of the stream. Bottom to top:
+
+| layer | contents |
+|---|---|
+| video | the stream |
+| stream UI | the header with the pinned sender names, and the chat column (T1 rows, the T2 slot) |
+| button | ギフトを送る |
+| effects | T3 centre and T4/T5 full frame, click-through so the button stays tappable |
+| debug HUD | development only |
+
+A full-frame effect owns the screen: while one plays the comment log fades out (500 ms) and comes
+back when it ends. Pinned sender names stay — they belong to the gifting — and sit at the top of
+the screen, clear of the subject. When both lanes run at once the full-frame effect paints over
+the centred one; full-frame effects keep the middle clear, so neither is hidden.
+
 ## Fade out
 
 The timeline ends at opacity 0 (T3–T5) or at the rest pose (T2). The wrapper additionally fades
