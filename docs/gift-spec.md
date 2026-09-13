@@ -33,13 +33,20 @@ Twelve gifts, cheapest first, grouped into five price tiers. Prices are in coins
 
 The gift effect is the top layer of the stream. Bottom to top:
 
-| layer | contents |
-|---|---|
-| video | the stream |
+| layer     | contents                                                                            |
+| --------- | ----------------------------------------------------------------------------------- |
+| video     | the stream                                                                          |
 | stream UI | the header with the pinned sender names, and the chat column (T1 rows, the T2 slot) |
-| button | ギフトを送る |
-| effects | T3 centre and T4/T5 full frame, click-through so the button stays tappable |
-| debug HUD | development only |
+| button    | ギフトを送る                                                                        |
+| effects   | T3 centre and T4/T5 full frame, click-through so the button stays tappable          |
+| debug HUD | development only                                                                    |
+
+Each artboard is authored at a fixed size (T3 360x360, T4/T5 390x844) but the viewport is rarely
+that aspect, so how the artboard maps onto its canvas is per gift (`layout` in `rive/catalog.ts`):
+`contain` for the centred lane, `cover` for full-frame effects, and an override where the artwork
+runs to an edge — the suite window is `fill` so its rail and sill both stay on screen, the palace
+is `cover` aligned to the bottom so the empty sky is cropped instead of its base. Art that must
+not be cropped has to reach an artboard edge deliberately, or stay inside the middle 9:16.
 
 A full-frame effect owns the screen: while one plays the comment log fades out (500 ms) and comes
 back when it ends. Pinned sender names stay — they belong to the gifting — and sit at the top of

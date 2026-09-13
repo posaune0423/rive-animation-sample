@@ -63,6 +63,8 @@ glint.visible_shadow = False
 root = group("ring", [band, head, crown, pav, glint, *prongs])
 root.rotation_euler = (0, 0, 0)
 
-studio_lights(scale=1.0, target=(0, 0, 0.5))
-camera(distance=6.2, height=1.3, lens=85, target=(0, 0, 0.55))
+# The ring spans z -1.41 (band bottom) to 1.5 (stone tip); aim at its middle and stand far enough
+# back that the whole band fits with a margin, or the band is clipped by the bottom of the frame.
+studio_lights(scale=1.0, target=(0, 0, 0.2))
+camera(distance=7.45, height=1.5, lens=85, target=(0, 0, 0.05))
 render(root)

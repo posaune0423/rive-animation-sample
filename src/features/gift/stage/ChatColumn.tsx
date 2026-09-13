@@ -1,6 +1,5 @@
 'use client'
 
-import { Fit } from '@rive-app/react-webgl2'
 import { giftById } from '@rive/catalog'
 import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
@@ -64,7 +63,7 @@ export const ChatColumn = () => {
         data-active={chatTopJob ? 'true' : 'false'}
       >
         <div className="relative size-16 shrink-0">
-          <LaneEffects lane="chatTop" fit={Fit.Contain} className="absolute inset-0" />
+          <LaneEffects lane="chatTop" className="absolute inset-0" />
         </div>
         {chatTopJob && (
           <p className="rounded-full bg-amber-300/90 px-3 py-1 text-[12px] font-medium text-neutral-900 shadow">

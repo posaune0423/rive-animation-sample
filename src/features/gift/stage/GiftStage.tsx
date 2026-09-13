@@ -1,6 +1,5 @@
 'use client'
 
-import { Fit } from '@rive-app/react-webgl2'
 import { LaneEffects } from './LaneEffects'
 
 /**
@@ -10,6 +9,8 @@ import { LaneEffects } from './LaneEffects'
  *
  * When both lanes run at once the higher tier wins: the full-frame effect paints over the centred
  * one. Full-frame effects keep the middle of the frame clear, so this hides neither.
+ *
+ * How each artboard maps onto its canvas is per gift (`layout` in the catalog), not per lane.
  */
 export const GiftStage = () => (
   <div
@@ -20,10 +21,10 @@ export const GiftStage = () => (
       className="absolute inset-x-0 top-[31%] z-0 flex h-[33dvh] max-h-[300px] justify-center"
       data-lane-slot="center"
     >
-      <LaneEffects lane="center" fit={Fit.Contain} className="absolute inset-0" />
+      <LaneEffects lane="center" className="absolute inset-0" />
     </div>
     <div className="absolute inset-0 z-10" data-lane-slot="full">
-      <LaneEffects lane="full" fit={Fit.Cover} className="absolute inset-0" />
+      <LaneEffects lane="full" className="absolute inset-0" />
     </div>
   </div>
 )

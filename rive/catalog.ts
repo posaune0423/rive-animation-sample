@@ -15,6 +15,34 @@ export type GiftCatalogEntry = {
   readonly pinSec: number
   readonly rivSrc: string | null
   readonly iconSrc: string
+  /**
+   * How the artboard maps onto its canvas. The artboards are authored at a fixed size but the
+   * browser viewport is rarely that aspect, so the default `cover` throws away the top and bottom
+   * of a full-frame artboard. Gifts whose artwork reaches an edge say so here.
+   */
+  readonly layout: GiftLayout
+}
+
+export type GiftLayout = {
+  readonly fit: 'cover' | 'contain' | 'fill'
+  readonly align: 'center' | 'bottom'
+}
+
+const LAYOUT_BY_TIER: Record<Tier, GiftLayout> = {
+  1: { fit: 'contain', align: 'center' },
+  2: { fit: 'contain', align: 'center' },
+  3: { fit: 'contain', align: 'center' },
+  4: { fit: 'cover', align: 'center' },
+  5: { fit: 'cover', align: 'center' },
+}
+
+/** Gifts whose artwork runs to an edge of the artboard and must not be cropped there. */
+const LAYOUT_OVERRIDE: Partial<Record<GiftId, GiftLayout>> = {
+  // the window frame spans the whole artboard: stretch it onto the screen so the rail at the top
+  // and the sill at the bottom both stay in view
+  suite: { fit: 'fill', align: 'center' },
+  // the palace stands on the bottom edge; crop the empty sky above it instead of its base
+  palace: { fit: 'cover', align: 'bottom' },
 }
 
 const LANE_BY_TIER: Record<Tier, GiftLane> = {
@@ -37,6 +65,7 @@ const entry = (id: GiftId, name: string, price: number, tier: Tier): GiftCatalog
   pinSec: PIN_SEC_BY_TIER[tier],
   rivSrc: tier === 1 ? null : `/rive/${id}.riv`,
   iconSrc: `/gifts/${id}.webp`,
+  layout: LAYOUT_OVERRIDE[id] ?? LAYOUT_BY_TIER[tier],
 })
 
 /** 12 gifts, cheapest first (4 columns × 3 rows in the sheet). */
