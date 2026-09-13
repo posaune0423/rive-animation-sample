@@ -5,9 +5,11 @@ twelve gifts in five price tiers, a queue that never overlaps full-screen effect
 measurements of file size, load time and frame pacing.
 
 The `.riv` files are **generated from TypeScript** (`rive/`) — no Rive editor involved — so the
-web side can be built and load-tested before designer assets exist. See
-[`docs/riv-format.md`](docs/riv-format.md) for how, and [`docs/gift-spec.md`](docs/gift-spec.md)
-for what the effects do.
+web side can be built and load-tested before designer assets exist. The gift artwork itself is
+**rendered headlessly with Blender** (`art/`) from one shared studio rig and embedded in the
+files as WebP; motion, light and particles are vector timelines on top. See
+[`docs/riv-format.md`](docs/riv-format.md) for the format, and
+[`docs/gift-spec.md`](docs/gift-spec.md) for what the effects do.
 
 ## Stack
 
@@ -18,8 +20,17 @@ oxlint · oxfmt · Vitest 5 · Playwright · lefthook · t3-env + valibot · `@r
 
 ```bash
 bun install
-bun run riv:build   # regenerate public/rive/*.riv, public/gifts/*.svg and the self-hosted wasm
+bun run riv:build   # regenerate public/rive/*.riv, public/gifts/*.webp and the self-hosted wasm
 bun dev             # http://localhost:3000
+```
+
+Re-rendering the artwork needs Blender 4.2+ at `/Applications/Blender.app` (or `$BLENDER`),
+ImageMagick (`magick`) and `cwebp`:
+
+```bash
+bun run art:preview          # every gift at low res/samples (~2 min)
+bun run art:render ring      # one gift at full quality; no argument renders all (~15 min)
+bun run riv:build            # embed the new renders
 ```
 
 The page is a portrait live-stream mock. Tap **ギフトを送る**, pick a gift; hearts/kisses send
@@ -45,8 +56,10 @@ UI on an iPhone-14 viewport and records metrics (see `reports/metrics.md` after 
 ## Layout
 
 ```
-rive/                 generator: writer (binary/scene/timeline → .riv + .svg), 12 gift definitions,
-                      catalog (shared with the app), build script, manifest.json
+art/blender/          Blender scripts: common.py (rig, camera, materials, turntable) + gifts/*.py
+art/renders/          rendered WebP parts and turntable frames (committed; input to riv:build)
+rive/                 generator: writer (binary/scene/timeline/images → .riv), 12 gift definitions,
+                      flipbook helper, catalog (shared with the app), build script, manifest.json
 public/rive, gifts/   generated output (committed; `riv:build` is deterministic)
 src/features/gift/    scheduler (pure reducer), GiftProvider (preload + pool), RiveGiftEffect
                       (one Rive instance per lane×gift), stage/chat/sheet UI, DebugHud, metrics
@@ -62,6 +75,9 @@ docs/                 format notes and the effect spec
 - `rive.wasm` is self-hosted at the version the React runtime pins and compiled before the first
   effect is requested (`RuntimeLoader.setWasmUrl` + `awaitInstance`).
 - Full-frame effects keep the streamer's face visible; the build fails if a resting shape covers it.
+- Rendered parts share one camera per gift, so a lid, a cork or a cap is a separate image placed
+  at the same point as its body and simply moved by the timeline; turning objects are 24-frame
+  turntables cross-faded in Rive rather than a 3D runtime.
 
 ## Environment
 
