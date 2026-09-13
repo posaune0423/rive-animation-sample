@@ -46,7 +46,7 @@ export const DebugHud = () => {
   return (
     <aside
       data-testid="hud"
-      className="pointer-events-auto absolute top-2 right-2 z-20 w-44 rounded-lg bg-black/70 p-2 font-mono text-[10px] leading-4 text-lime-200 backdrop-blur"
+      className="pointer-events-auto absolute top-2 right-2 z-50 w-44 rounded-lg bg-black/70 p-2 font-mono text-[10px] leading-4 text-lime-200 backdrop-blur"
     >
       <div className="flex justify-between">
         <span>fps</span>

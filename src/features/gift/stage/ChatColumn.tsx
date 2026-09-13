@@ -50,7 +50,7 @@ export const ChatColumn = () => {
 
   return (
     <div
-      className="pointer-events-none absolute bottom-20 left-3 flex w-[72%] flex-col gap-2"
+      className="pointer-events-none absolute bottom-20 left-3 z-10 flex w-[72%] flex-col gap-2"
       data-testid="chat-column"
     >
       <PinnedSenders />

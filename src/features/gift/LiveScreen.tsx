@@ -7,17 +7,30 @@ import { GiftSheet } from './sheet/GiftSheet'
 import { ChatColumn } from './stage/ChatColumn'
 import { GiftStage } from './stage/GiftStage'
 
-/** Portrait live-stream mock: fake video, chat on the lower-left, gift button at the bottom. */
+/**
+ * Portrait live-stream mock: fake video, chat on the lower-left, gift button at the bottom.
+ *
+ * Layers, bottom to top (DOM order alone is not enough — the effects come before the chat in the
+ * tree so the pool mounts early, but they must paint last):
+ *
+ *   z-0   video
+ *   z-10  stream UI: chat column (pinned senders, T1 rows, the T2 slot) and the LIVE header
+ *   z-20  the gift button
+ *   z-30  gift effects (T3 center, T4/T5 full frame) — always the top layer, never clickable
+ *   z-50  debug HUD (development overlay, must stay readable while an effect plays)
+ *
+ * The gift sheet is portalled by the drawer, so an open sheet still covers everything.
+ */
 export const LiveScreen = () => (
   <GiftProvider>
-    <main className="relative mx-auto h-dvh w-full max-w-[430px] overflow-hidden bg-black text-white">
+    <main className="relative isolate mx-auto h-dvh w-full max-w-[430px] overflow-hidden bg-black text-white">
       <FakeVideo />
       <GiftStage />
       <ChatColumn />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center pb-[max(1rem,env(safe-area-inset-bottom))]">
         <GiftSheet />
       </div>
-      <header className="pointer-events-none absolute top-3 left-3 flex items-center gap-2 text-[12px]">
+      <header className="pointer-events-none absolute top-3 left-3 z-10 flex items-center gap-2 text-[12px]">
         <span className="rounded-full bg-rose-600 px-2 py-0.5 font-semibold">LIVE</span>
         <span className="rounded-full bg-black/40 px-2 py-0.5">1,203 人が視聴中</span>
       </header>
@@ -27,7 +40,7 @@ export const LiveScreen = () => (
 )
 
 const FakeVideo = () => (
-  <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(120%_80%_at_50%_100%,#3b1d3f_0%,#12091a_55%,#05030a_100%)]">
+  <div className="absolute inset-0 z-0 overflow-hidden bg-[radial-gradient(120%_80%_at_50%_100%,#3b1d3f_0%,#12091a_55%,#05030a_100%)]">
     <div className="fake-blob absolute top-[8%] left-[-20%] size-[70vw] rounded-full bg-fuchsia-600/25 blur-3xl" />
     <div className="fake-blob-slow absolute right-[-25%] bottom-[10%] size-[80vw] rounded-full bg-indigo-500/25 blur-3xl" />
     {/* streamer silhouette so the face-safe area is visible */}
