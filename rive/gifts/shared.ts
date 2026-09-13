@@ -29,8 +29,10 @@ export type GiftId =
 export type GiftDefinition = {
   readonly id: GiftId
   readonly tier: Tier
-  /** Static drawing for the gift list (square artboard). */
-  readonly icon: Scene
+  /** Vector drawing for the gift list (square artboard); used when `iconRender` is absent. */
+  readonly icon?: Scene
+  /** Name of a render in art/renders to use as the list icon. One of icon / iconRender is required. */
+  readonly iconRender?: string
   /** Rive effect. Absent for T1 (CSS pop only). */
   readonly effect?: { readonly scene: Scene; readonly play: Timeline }
 }

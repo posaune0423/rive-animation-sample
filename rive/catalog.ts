@@ -36,7 +36,7 @@ const entry = (id: GiftId, name: string, price: number, tier: Tier): GiftCatalog
   durationMs: Math.round(TIER_DURATION_SEC[tier] * 1000),
   pinSec: PIN_SEC_BY_TIER[tier],
   rivSrc: tier === 1 ? null : `/rive/${id}.riv`,
-  iconSrc: `/gifts/${id}.svg`,
+  iconSrc: `/gifts/${id}.webp`,
 })
 
 /** 12 gifts, cheapest first (4 columns × 3 rows in the sheet). */

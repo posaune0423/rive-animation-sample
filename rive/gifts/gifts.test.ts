@@ -2,10 +2,16 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { GIFTS } from '../catalog'
-import { RIVE_CONTRACT, TIER_DURATION_SEC, TIER_SHAPE_BUDGET } from '../contract'
+import {
+  RIVE_CONTRACT,
+  TIER_DURATION_SEC,
+  TIER_FILE_BUDGET_KB,
+  TIER_SHAPE_BUDGET,
+} from '../contract'
 import { GIFT_DEFINITIONS } from './index'
 import { loadHeadlessRive } from '../writer/headless'
 import { checkFaceSafe, shapeCount } from '../writer/lint'
+import { collectAssets } from '../writer/scene'
 import { toRiv } from '../writer/toRiv'
 
 const publicDir = join(import.meta.dirname, '..', '..', 'public')
@@ -37,7 +43,9 @@ describe('gift definitions', () => {
       const committed = readFileSync(join(publicDir, 'rive', `${gift.id}.riv`))
       const fresh = toRiv(gift.effect.scene, gift.effect.play)
       expect(Buffer.from(fresh).equals(committed)).toBe(true)
-      expect(fresh.byteLength).toBeLessThan(30 * 1024)
+      expect(fresh.byteLength / 1024).toBeLessThanOrEqual(
+        TIER_FILE_BUDGET_KB[gift.tier as 2 | 3 | 4 | 5],
+      )
     },
   )
 
@@ -45,9 +53,20 @@ describe('gift definitions', () => {
     '$id: loads, exposes the contract and reports "finished" on time',
     async gift => {
       const rive = await loadHeadlessRive()
+      // Node cannot decode images (no `Image`); claim every embedded asset instead and check
+      // that the file carries exactly the renders the scene references.
+      const seenAssets: string[] = []
+      const loader = new rive.CustomFileAssetLoader({
+        loadContents: (asset: { name: string; isImage: boolean }) => {
+          if (asset.isImage) seenAssets.push(asset.name)
+          return true
+        },
+      })
       const file = await rive.load(
         new Uint8Array(readFileSync(join(publicDir, 'rive', `${gift.id}.riv`))),
+        loader,
       )
+      expect(seenAssets).toEqual(collectAssets(gift.effect.scene).map(a => a.name))
       const artboard = file.artboardByIndex(0)
       expect(artboard.name).toBe(gift.id)
       const sm = new rive.StateMachineInstance(artboard.stateMachineByIndex(0), artboard)

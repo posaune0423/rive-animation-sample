@@ -39,9 +39,21 @@ The timeline ends at opacity 0 (T3–T5) or at the rest pose (T2). The wrapper a
 - Palette: deep red / champagne gold / amber / ice white (`rive/palette.ts`), on a night background.
 - Full-frame effects keep the face area (22–78 % × 18–58 %) free of anything with effective alpha
   > 0.35 at rest (`rive/writer/lint.ts`, enforced by `riv:build`).
-- Shape budget per file: T2 ≤ 20, T3 ≤ 40, T4 ≤ 80, T5 ≤ 150. No blend modes, no raster, no text.
-- The list icon and the effect share one drawing: each gift defines shapes once and emits both
-  `public/gifts/<id>.svg` and `public/rive/<id>.riv`.
+- Drawable budget per file: T2 ≤ 20, T3 ≤ 40, T4 ≤ 80, T5 ≤ 150 (images count as one each). File
+  budget: T2 ≤ 150 KB, T3 ≤ 320 KB, T4/T5 ≤ 420 KB. No blend modes, no text.
+- **The subjects are rendered, the light is vector.** Every gift's object (heart, lips, box,
+  bottle, bear, bouquet, flacon, ring, stone, room, palace, medallion) is a physically shaded
+  render from `art/blender/gifts/*.py` — one shared studio rig, camera and palette
+  (`art/blender/common.py`) so the twelve read as one set — exported as transparent WebP into
+  `art/renders/` and embedded in the `.riv`. Glows, sparkles, bubbles, mist, petals, dust and rings
+  stay vector so they scale and animate for free.
+- Motion comes from parts, not frames: multi-part gifts render each part alone with the same
+  camera (`candy_box` + `candy_lid`, `sparkling_bottle` + `sparkling_cork`, `perfume_bottle` +
+  `perfume_cap`, `bouquet_closed` → `bouquet_open`, `suite_skyline` / `suite_frame` /
+  `suite_curtain` mirrored) and the timeline moves them. Objects that have to turn (`ring`,
+  `diamond`) are 24-frame turntables cross-faded as a flipbook (`rive/gifts/flipbook.ts`).
+- The list icon is the same render (`iconRender`), so the sheet, the chat row and the effect show
+  one object.
 
 ## Contract for a designer-made file
 
