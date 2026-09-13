@@ -2,7 +2,7 @@ import { renderAsset } from '../assets'
 import { TIER_ARTBOARD, TIER_DURATION_SEC } from '../contract'
 import { palette } from '../palette'
 import { withAlpha } from '../writer/binary'
-import { ellipse, group, image, radial, scene, shape, solid } from '../writer/scene'
+import { ellipse, group, image, scene, shape, solid } from '../writer/scene'
 import { EASE, timeline } from '../writer/timeline'
 import { range, seeded, sparkle, type GiftDefinition } from './shared'
 
@@ -22,26 +22,13 @@ const PALACE_W = W
 const PALACE_H = (PALACE_W * 720) / 520
 const PALACE_TOP = H - PALACE_H
 
-/** Rendered night palace (emissive windows baked in) rising from the bottom, gold dust around. */
+/** Rendered night palace (emissive windows baked in) rising from the bottom through gold dust. */
 export const palace: GiftDefinition = {
   id: 'palace',
   tier: 5,
   iconRender: 'palace',
   effect: {
     scene: scene('palace', W, H, [
-      shape(
-        'glow',
-        { x: W / 2, y: 820, opacity: 0 },
-        ellipse(620, 360),
-        radial(
-          [0, 0],
-          [310, 0],
-          [
-            { position: 0, color: withAlpha(palette.champagneLight, 0.6) },
-            { position: 1, color: withAlpha(palette.champagneLight, 0) },
-          ],
-        ),
-      ),
       ...range(PALACE_DUST).map(i =>
         shape(
           `dust${i}`,
@@ -70,13 +57,6 @@ export const palace: GiftDefinition = {
         [8.5, 1, EASE.softIn],
         [12, 0],
       ])
-      // 0–1.5 余白。光だけ
-      t.keys('glow', 'opacity', [
-        [0, 0, EASE.softOut],
-        [1.5, 0.6, EASE.inOut],
-        [6.5, 1, 'linear'],
-        [8.5, 1],
-      ])
       // 下から宮殿がせり上がる
       t.keys('palace', 'y', [
         [1.5, H - PALACE_TOP, EASE.out],
@@ -85,7 +65,8 @@ export const palace: GiftDefinition = {
       // 星や光の粒子が周囲を舞う
       const rand = seeded(100_000)
       range(PALACE_DUST).forEach(i => {
-        const start = 1.8 + rand() * 5.5
+        // the first 1.5 s is dust only, then the palace rises through it
+        const start = 0.3 + rand() * 7.0
         const life = 2.2 + rand() * 1.8
         const x0 = 20 + rand() * (W - 40)
         t.keys(`dust${i}`, 'x', [
@@ -130,20 +111,6 @@ export const myth: GiftDefinition = {
   iconRender: 'myth_medallion',
   effect: {
     scene: scene('myth', W, H, [
-      shape(
-        'glow',
-        { x: W / 2, y: CENTER_Y, opacity: 0 },
-        ellipse(640),
-        radial(
-          [0, 0],
-          [320, 0],
-          [
-            { position: 0, color: withAlpha(palette.champagneLight, 0.55) },
-            { position: 0.55, color: withAlpha(palette.gold, 0.18) },
-            { position: 1, color: withAlpha(palette.gold, 0) },
-          ],
-        ),
-      ),
       group('medallion', { x: W / 2, y: CENTER_Y, opacity: 0, scaleX: 0.6, scaleY: 0.6 }, [
         image('medallionImg', {}, renderAsset('myth_medallion'), 560),
       ]),
@@ -183,13 +150,6 @@ export const myth: GiftDefinition = {
         [0, 1, 'hold'],
         [8.6, 1, EASE.softIn],
         [12, 0],
-      ])
-      // 光の輪が中央から広がる。8秒付近がいちばん明るい
-      t.keys('glow', 'opacity', [
-        [0, 0, EASE.softOut],
-        [1.5, 0.35, EASE.inOut],
-        [8.0, 1, 'linear'],
-        [8.6, 1],
       ])
       // 金のメダリオンが奥でゆっくり回り、透けたまま大きくなる
       t.keys('medallion', 'opacity', [

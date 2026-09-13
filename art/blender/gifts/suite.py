@@ -187,28 +187,19 @@ if ICON:
     f, tk = 0.88, 0.085
     op = f - tk  # inner opening
     frame_objs = [
-        box("sky", -op, op, 0.9, 1.1, -op, op, night_matte("IconSky", (0.012, 0.018, 0.05, 1))),
         box("fTop", -f, f, -0.3, 0.3, op, f, ring),
         box("fBot", -f, f, -0.3, 0.3, -f, -op, ring),
         box("fL", -f, -op, -0.3, 0.3, -f, f, ring),
         box("fR", op, f, -0.3, 0.3, -f, f, ring),
     ]
-    for o in frame_objs[1:]:
+    for o in frame_objs:
         bevel(o, 0.018, 3)
-    u_lo, u_hi = 0.5 - op / W, 0.5 + op / W
     v_lo = 0.5 - op / H
-    sky = skyline_row(
-        0.55, 0.5, (0.008, 0.010, 0.030, 1), v_lo + 0.13, v_lo + 0.30, u_lo, u_hi, 0.16, 0.42, v_base=v_lo
-    )
-    lights = [
-        moon(fx(0.60), fz(0.73), 0.13, 0.86, 5.5),
-        *stars(10, 0.60, 0.82, 0.86, 0.008, 0.016, skip=lambda u, v: u > 0.70 or u < 0.26),
-    ]
     cl = curtain_panel("curtainL", -op, -op * 0.42, -op, op, folds=2.25, depth=0.2)
     cr = curtain_panel("curtainR", op, op * 0.42, -op, op, folds=2.25, depth=0.2)
     sill = box("sill", -op, op, -0.34, -0.16, fz(v_lo), fz(v_lo) + 0.05, ring)
     rail = box("rail", -op, op, -0.34, -0.2, op - 0.06, op, ring)
-    root = group("suiteIcon", [*frame_objs, *sky, *lights, cl, cr, sill, rail])
+    root = group("suiteIcon", [*frame_objs, cl, cr, sill, rail])
     studio_lights(scale=1.1, target=(0, 0, 0))
     camera(distance=8.0, height=0.0, ortho=True, ortho_scale=H, target=(0, 0, 0))
 else:
@@ -247,16 +238,6 @@ else:
         *finials,
     ]
 
-    # --- skyline -------------------------------------------------------------------------------
-    far = skyline_row(4.2, 4.1, (0.016, 0.020, 0.055, 1), 0.10, 0.185, -0.04, 1.04, 0.10, 1.0)
-    near = skyline_row(2.4, 2.3, (0.008, 0.010, 0.030, 1), 0.13, 0.25, -0.04, 1.04, 0.14, 1.0)
-    sky_objs = [
-        *far,
-        *near,
-        moon(fx(0.862), fz(0.902), 0.27, 6.0, 5.0),
-        *stars(18, 0.855, 0.985, 6.0),
-    ]
-
     # --- curtain -------------------------------------------------------------------------------
     curtain = curtain_panel("curtainL", fx(-0.01), fx(0.45), fz(0.135), fz(0.935), folds=5.25, depth=0.85)
     tie_z = fz(0.135) + (fz(0.935) - fz(0.135)) * 0.42
@@ -275,9 +256,8 @@ else:
     curtain_objs = [curtain, tie, knot]
 
     hide_unless("frame", *frame_objs)
-    hide_unless("skyline", *sky_objs)
     hide_unless("curtain", *curtain_objs)
-    root = group("suite", [*frame_objs, *sky_objs, *curtain_objs])
+    root = group("suite", [*frame_objs, *curtain_objs])
     studio_lights(scale=1.7, target=(0, -0.4, 0))
     camera(distance=22.0, height=0.0, ortho=True, ortho_scale=H, target=(0, 0, 0))
 

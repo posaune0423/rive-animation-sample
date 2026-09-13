@@ -167,14 +167,6 @@ sc.collection.objects.link(w_obj)
 assign(w_obj, WIN)
 objs.append(w_obj)
 
-# moon --------------------------------------------------------------------------------------------
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.42, location=(fx(0.135), 6.0, fz(0.795)), segments=48, ring_count=24)
-m = bpy.context.object
-m.name = "moon"
-m.visible_shadow = False
-assign(shade_smooth(m), emissive("Moon", (0.84, 0.9, 1.0, 1), 2.4))
-objs.append(m)
-
 root = group("palace", objs)
 studio_lights(scale=1.9, target=(0, 0, fz(0.25)))
 camera(distance=22.0, height=0.0, ortho=True, ortho_scale=H, target=(0, 0, 0))

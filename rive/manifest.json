@@ -52,8 +52,8 @@
       "tier": 3,
       "riv": {
         "file": "/rive/bouquet.riv",
-        "bytes": 30520,
-        "shapes": 11
+        "bytes": 30367,
+        "shapes": 10
       },
       "icon": "/gifts/bouquet.webp"
     },
@@ -62,8 +62,8 @@
       "tier": 3,
       "riv": {
         "file": "/rive/perfume.riv",
-        "bytes": 14890,
-        "shapes": 13
+        "bytes": 14737,
+        "shapes": 12
       },
       "icon": "/gifts/perfume.webp"
     },
@@ -72,8 +72,8 @@
       "tier": 3,
       "riv": {
         "file": "/rive/ring.riv",
-        "bytes": 279174,
-        "shapes": 28
+        "bytes": 279017,
+        "shapes": 27
       },
       "icon": "/gifts/ring.webp"
     },
@@ -82,8 +82,8 @@
       "tier": 4,
       "riv": {
         "file": "/rive/diamond.riv",
-        "bytes": 129776,
-        "shapes": 35
+        "bytes": 129435,
+        "shapes": 33
       },
       "icon": "/gifts/diamond.webp"
     },
@@ -92,8 +92,8 @@
       "tier": 4,
       "riv": {
         "file": "/rive/suite.riv",
-        "bytes": 30827,
-        "shapes": 4
+        "bytes": 17473,
+        "shapes": 3
       },
       "icon": "/gifts/suite.webp"
     },
@@ -102,8 +102,8 @@
       "tier": 5,
       "riv": {
         "file": "/rive/palace.riv",
-        "bytes": 22659,
-        "shapes": 30
+        "bytes": 21648,
+        "shapes": 29
       },
       "icon": "/gifts/palace.webp"
     },
@@ -112,8 +112,8 @@
       "tier": 5,
       "riv": {
         "file": "/rive/myth.riv",
-        "bytes": 49590,
-        "shapes": 66
+        "bytes": 49404,
+        "shapes": 65
       },
       "icon": "/gifts/myth.webp"
     }

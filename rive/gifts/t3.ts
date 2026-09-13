@@ -2,7 +2,7 @@ import { renderAsset, renderFrames } from '../assets'
 import { TIER_ARTBOARD, TIER_DURATION_SEC } from '../contract'
 import { palette } from '../palette'
 import { withAlpha } from '../writer/binary'
-import { ellipse, group, image, radial, scene, shape, solid } from '../writer/scene'
+import { ellipse, group, image, scene, shape, solid } from '../writer/scene'
 import { EASE, timeline, type TimelineBuilder } from '../writer/timeline'
 import { flipbook, playFlipbook } from './flipbook'
 import { range, seeded, sparkle, type GiftDefinition } from './shared'
@@ -35,29 +35,6 @@ const appearAndFade = (t: TimelineBuilder, root: string): TimelineBuilder =>
       [0.4, 1],
     ])
 
-const halo = (id: string, color: number, size = 320) =>
-  shape(
-    id,
-    { opacity: 0 },
-    ellipse(size),
-    radial(
-      [0, 0],
-      [size / 2, 0],
-      [
-        { position: 0, color: withAlpha(color, 0.35) },
-        { position: 1, color: withAlpha(color, 0) },
-      ],
-    ),
-  )
-
-const haloKeys = (t: TimelineBuilder, id: string): TimelineBuilder =>
-  t.keys(id, 'opacity', [
-    [0.4, 0, EASE.softOut],
-    [1.4, 1, 'linear'],
-    [3.0, 1, EASE.softIn],
-    [3.6, 0],
-  ])
-
 // ---- 花束 1,000 -------------------------------------------------------------
 
 export const bouquet: GiftDefinition = {
@@ -67,7 +44,6 @@ export const bouquet: GiftDefinition = {
   effect: {
     scene: scene('bouquet', W, H, [
       group('gift', { x: CX, y: CY }, [
-        halo('halo', palette.deepRedLight),
         // closed buds cross-fade into the open bouquet
         image('closed', {}, renderAsset('bouquet_closed'), ART),
         image('open', { opacity: 0, scaleX: 0.92, scaleY: 0.92 }, renderAsset('bouquet_open'), ART),
@@ -83,7 +59,6 @@ export const bouquet: GiftDefinition = {
     ]),
     play: (() => {
       const t = appearAndFade(timeline('play', DUR), 'gift')
-      haloKeys(t, 'halo')
       // 閉じた束が中央で開く
       t.keys('closed', 'opacity', [
         [0.6, 1, EASE.inOut],
@@ -136,7 +111,6 @@ export const perfume: GiftDefinition = {
   effect: {
     scene: scene('perfume', W, H, [
       group('gift', { x: CX, y: CY }, [
-        halo('halo', palette.amberGlass),
         image('bottle', {}, renderAsset('perfume_bottle'), ART),
         image('cap', {}, renderAsset('perfume_cap'), ART),
         ...range(MIST).map(i =>
@@ -151,7 +125,6 @@ export const perfume: GiftDefinition = {
     ]),
     play: (() => {
       const t = appearAndFade(timeline('play', DUR), 'gift')
-      haloKeys(t, 'halo')
       // 1回噴霧。霧が左右に薄く広がって消える（霧は必ず半透明）
       t.keys('cap', 'y', [
         [0.8, 0, EASE.in],
@@ -202,7 +175,6 @@ export const ring: GiftDefinition = {
   effect: {
     scene: scene('ring', W, H, [
       group('gift', { x: CX, y: CY }, [
-        halo('halo', palette.champagneLight),
         flipbook('spin', renderFrames('ring', RING_FRAMES), {}, ART),
         sparkle('sparkA', -80, -60, 26, solid(withAlpha(palette.white, 0.95))),
         sparkle('sparkB', 70, 40, 20, solid(withAlpha(palette.white, 0.95))),
@@ -211,7 +183,6 @@ export const ring: GiftDefinition = {
     ]),
     play: (() => {
       const t = appearAndFade(timeline('play', DUR), 'gift')
-      haloKeys(t, 'halo')
       // その場でゆっくり1回転。きらめきは点
       playFlipbook(t, 'spin', RING_FRAMES, { start: 0.4, end: 3.6, turns: 1 })
       const flashes: ReadonlyArray<readonly [id: string, at: number]> = [

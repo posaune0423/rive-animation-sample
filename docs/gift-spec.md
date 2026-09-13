@@ -46,11 +46,12 @@ The timeline ends at opacity 0 (T3–T5) or at the rest pose (T2). The wrapper a
   render from `art/blender/gifts/*.py` — one shared studio rig, camera and palette
   (`art/blender/common.py`) so the twelve read as one set — exported as transparent WebP into
   `art/renders/` and embedded in the `.riv`. Glows, sparkles, bubbles, mist, petals, dust and rings
-  stay vector so they scale and animate for free.
+  stay vector so they scale and animate for free. Nothing else is drawn: no backdrop plates,
+  skylines or screen-wide glows — every effect is the transparent object itself plus its own
+  particles, so the stream is always visible around it.
 - Motion comes from parts, not frames: multi-part gifts render each part alone with the same
   camera (`candy_box` + `candy_lid`, `sparkling_bottle` + `sparkling_cork`, `perfume_bottle` +
-  `perfume_cap`, `bouquet_closed` → `bouquet_open`, `suite_skyline` / `suite_frame` /
-  `suite_curtain` mirrored) and the timeline moves them. Objects that have to turn (`ring`,
+  `perfume_cap`, `bouquet_closed` → `bouquet_open`, `suite_frame` + `suite_curtain` mirrored) and the timeline moves them. Objects that have to turn (`ring`,
   `diamond`) are 24-frame turntables cross-faded as a flipbook (`rive/gifts/flipbook.ts`).
 - The list icon is the same render (`iconRender`), so the sheet, the chat row and the effect show
   one object.

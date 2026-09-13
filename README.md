@@ -31,6 +31,7 @@ ImageMagick (`magick`) and `cwebp`:
 bun run art:preview          # every gift at low res/samples (~2 min)
 bun run art:render ring      # one gift at full quality; no argument renders all (~15 min)
 bun run riv:build            # embed the new renders
+bun run e2e/record.ts http://localhost:3100 reports/gift-effects.webm   # video of all 12 gifts
 ```
 
 The page is a portrait live-stream mock. Tap **ギフトを送る**, pick a gift; hearts/kisses send

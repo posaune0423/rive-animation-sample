@@ -70,15 +70,6 @@ export const JOBS: readonly RenderJob[] = [
   // T4 — full frame
   square('diamond', 'diamond.py', 320, { res: 768, samples: 160, turntable: 24 }),
   {
-    id: 'suite_skyline',
-    script: 'suite.py',
-    part: 'skyline',
-    res: 585,
-    resY: 1266,
-    outPx: 390,
-    outPy: 844,
-  },
-  {
     id: 'suite_frame',
     script: 'suite.py',
     part: 'frame',

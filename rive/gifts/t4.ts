@@ -2,8 +2,8 @@ import { renderAsset, renderFrames } from '../assets'
 import { TIER_ARTBOARD, TIER_DURATION_SEC } from '../contract'
 import { palette } from '../palette'
 import { withAlpha } from '../writer/binary'
-import { group, image, linear, rect, scene, shape, solid, type SceneNode } from '../writer/scene'
-import { EASE, timeline, type TimelineBuilder } from '../writer/timeline'
+import { group, image, scene, solid } from '../writer/scene'
+import { EASE, timeline } from '../writer/timeline'
 import { flipbook, playFlipbook } from './flipbook'
 import { range, seeded, sparkle, type GiftDefinition } from './shared'
 
@@ -11,51 +11,10 @@ const { width: W, height: H } = TIER_ARTBOARD[4]
 const DUR = TIER_DURATION_SEC[4]
 
 /**
- * T4 template: 0.0–0.8 light comes in from the edges (center still empty),
- * 0.8–5.5 something crosses the frame or the room frame opens, 5.5–8.0 light returns to the
- * edges and fades. The video stays visible the whole time; nothing opaque sits on the face.
+ * T4 template: 0.0–0.8 the object enters from the edge (center still empty), 0.8–5.5 it crosses
+ * the frame or the room frame opens, 5.5–8.0 it leaves and fades. Only the object is drawn — no
+ * plates or washes — so the video stays visible the whole time.
  */
-const edgeLights = (): SceneNode[] => [
-  shape(
-    'edgeL',
-    { x: 30, y: H / 2, opacity: 0 },
-    rect(60, H),
-    linear(
-      [-30, 0],
-      [30, 0],
-      [
-        { position: 0, color: withAlpha(palette.ice, 0.45) },
-        { position: 1, color: withAlpha(palette.ice, 0) },
-      ],
-    ),
-  ),
-  shape(
-    'edgeR',
-    { x: W - 30, y: H / 2, opacity: 0 },
-    rect(60, H),
-    linear(
-      [30, 0],
-      [-30, 0],
-      [
-        { position: 0, color: withAlpha(palette.ice, 0.45) },
-        { position: 1, color: withAlpha(palette.ice, 0) },
-      ],
-    ),
-  ),
-]
-
-const edgeLightKeys = (t: TimelineBuilder): TimelineBuilder => {
-  for (const id of ['edgeL', 'edgeR']) {
-    t.keys(id, 'opacity', [
-      [0, 0, EASE.softOut],
-      [0.8, 1, 'linear'],
-      [5.5, 1, EASE.softIn],
-      [8.0, 0],
-    ])
-  }
-  return t
-}
-
 // ---- ダイヤ 10,000 -------------------------------------------------------------
 
 const DIAMOND_FRAMES = 24
@@ -69,7 +28,6 @@ export const diamond: GiftDefinition = {
   iconRender: 'diamond_f02',
   effect: {
     scene: scene('diamond', W, H, [
-      ...edgeLights(),
       ...range(TRAIL).map(i =>
         sparkle(`trail${i}`, -100, GEM_Y, 18 + (i % 3) * 6, solid(withAlpha(palette.ice, 0.85))),
       ),
@@ -79,7 +37,7 @@ export const diamond: GiftDefinition = {
       ]),
     ]),
     play: (() => {
-      const t = edgeLightKeys(timeline('play', DUR))
+      const t = timeline('play', DUR)
       // 映像枠の外から、中央を透かして横切り、反対側へ抜ける（2回転しながら）
       t.keys('gift', 'x', [
         [0.8, -140, 'linear'],
@@ -133,9 +91,8 @@ export const diamond: GiftDefinition = {
 const CURTAIN_TRAVEL = 95
 
 /**
- * Three full-frame renders: night skyline (bottom band + moon), the room frame (rail, pillars,
- * sill) and one velvet curtain panel mirrored for the right side. The curtains part to reveal
- * the window, then close again.
+ * Two renders: the room frame (rail, pillars, sill) and one velvet curtain panel mirrored for the
+ * right side. The curtains part to reveal the stream through the window, then close again.
  */
 export const suite: GiftDefinition = {
   id: 'suite',
@@ -143,9 +100,6 @@ export const suite: GiftDefinition = {
   iconRender: 'suite_icon',
   effect: {
     scene: scene('suite', W, H, [
-      image('skyline', { x: W / 2, y: H / 2, opacity: 0 }, renderAsset('suite_skyline'), W, {
-        transparentCenter: true,
-      }),
       image('frame', { x: W / 2, y: H / 2, opacity: 0 }, renderAsset('suite_frame'), W, {
         transparentCenter: true,
       }),
@@ -177,14 +131,12 @@ export const suite: GiftDefinition = {
         [5.5, W / 2 + CURTAIN_TRAVEL, EASE.inOut],
         [7.4, W / 2],
       ])
-      for (const id of ['skyline', 'frame']) {
-        t.keys(id, 'opacity', [
-          [0.6, 0, EASE.softOut],
-          [2.0, 1, 'linear'],
-          [6.2, 1, EASE.softIn],
-          [7.4, 0],
-        ])
-      }
+      t.keys('frame', 'opacity', [
+        [0.6, 0, EASE.softOut],
+        [2.0, 1, 'linear'],
+        [6.2, 1, EASE.softIn],
+        [7.4, 0],
+      ])
       return t.build()
     })(),
   },
