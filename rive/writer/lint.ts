@@ -56,23 +56,48 @@ export const checkFaceSafe = (scene: Scene): string[] => {
       for (const child of node.children) visit(child, [x, y], [sx, sy], alpha)
       return
     }
+    if (node.kind === 'image') {
+      if (node.transparentCenter) return
+      const h = (node.asset.height / node.asset.width) * node.width
+      check(
+        node.id,
+        { minX: -node.width / 2, maxX: node.width / 2, minY: -h / 2, maxY: h / 2 },
+        x,
+        y,
+        sx,
+        sy,
+        alpha,
+      )
+      return
+    }
     if (!node.fill) return
     const box = geometryBox(node)
     if (!box) return
+    check(node.id, box, x, y, sx, sy, alpha * paintAlpha(node.fill))
+  }
+
+  const check = (
+    id: string,
+    box: Box,
+    x: number,
+    y: number,
+    sx: number,
+    sy: number,
+    effective: number,
+  ) => {
     const world = {
       minX: x + box.minX * sx,
       maxX: x + box.maxX * sx,
       minY: y + box.minY * sy,
       maxY: y + box.maxY * sy,
     }
-    const effective = alpha * paintAlpha(node.fill)
     if (effective <= 0.35) return
     const overlapW = Math.min(world.maxX, face.maxX) - Math.max(world.minX, face.minX)
     const overlapH = Math.min(world.maxY, face.maxY) - Math.max(world.minY, face.minY)
     if (overlapW <= 0 || overlapH <= 0) return
     const footprint = (world.maxX - world.minX) * (world.maxY - world.minY)
     if (footprint / artboardArea > 0.02) {
-      violations.push(`${node.id}: alpha ${effective.toFixed(2)} covers the face-safe area`)
+      violations.push(`${id}: alpha ${effective.toFixed(2)} covers the face-safe area`)
     }
   }
 
@@ -80,8 +105,9 @@ export const checkFaceSafe = (scene: Scene): string[] => {
   return violations
 }
 
+/** Drawables (shapes + images). */
 export const shapeCount = (scene: Scene): number => {
   let n = 0
-  for (const { node } of walk(scene.root)) if (node.kind === 'shape') n++
+  for (const { node } of walk(scene.root)) if (node.kind !== 'group') n++
   return n
 }

@@ -12,6 +12,8 @@ import {
 } from './keys'
 import {
   assertUniqueIds,
+  collectAssets,
+  imageScale,
   ROOT_ID,
   type GroupNode,
   type Paint,
@@ -21,7 +23,7 @@ import {
 import { easeKey, isCubic, type AnimProp, type Ease, type Timeline } from './timeline'
 
 type PropDef = { readonly key: number; readonly type: FieldType }
-type Value = number | string | boolean
+type Value = number | string | boolean | Uint8Array
 type RivObject = { readonly type: number; readonly props: ReadonlyArray<readonly [PropDef, Value]> }
 
 /**
@@ -38,8 +40,23 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
     objects.push({ type, props })
   }
 
-  // ---- backboard + artboard (component index 0) ---------------------------
+  // ---- backboard + embedded image assets + artboard (component index 0) ---
   emit(TYPE.backboard, [])
+  // Image.assetId is the 0-based index into the file's asset list (file.cpp resolves referencers
+  // with `fileAssets[assetId]`), not a match against ImageAsset.assetId. Both are written equal.
+  const assetIds = new Map<string, number>()
+  const imageScales = new Map<string, number>()
+  for (const asset of collectAssets(scene)) {
+    const id = assetIds.size
+    assetIds.set(asset.name, id)
+    emit(TYPE.imageAsset, [
+      [PROP.assetName, asset.name],
+      [PROP.assetId, id],
+      [PROP.assetWidth, asset.width],
+      [PROP.assetHeight, asset.height],
+    ])
+    emit(TYPE.fileAssetContents, [[PROP.assetBytes, asset.bytes]])
+  }
   emit(TYPE.artboard, [
     [PROP.name, scene.artboard],
     [PROP.artboardWidth, scene.width],
@@ -109,6 +126,19 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
     ]
     if (node.kind === 'group') {
       emit(TYPE.node, base)
+      continue
+    }
+    if (node.kind === 'image') {
+      // Images draw at their pixel size; scale maps that onto the requested artboard width.
+      const s = imageScale(node)
+      imageScales.set(node.id, s)
+      const scaled = base.filter(([def]) => def !== PROP.scaleX && def !== PROP.scaleY)
+      emit(TYPE.image, [
+        ...scaled,
+        [PROP.scaleX, (node.scaleX ?? 1) * s],
+        [PROP.scaleY, (node.scaleY ?? 1) * s],
+        [PROP.imageAssetId, assetIds.get(node.asset.name) as number],
+      ])
       continue
     }
     emit(TYPE.shape, base)
@@ -297,6 +327,11 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
     emit(TYPE.keyedObject, [[PROP.keyedObjectId, objectId]])
     for (const { key, track } of list) {
       emit(TYPE.keyedProperty, [[PROP.keyedPropertyKey, key]])
+      // keyed scale on an image node is authored in artboard units, like the scene transform
+      const scale =
+        track.prop === 'scaleX' || track.prop === 'scaleY'
+          ? (imageScales.get(track.target) ?? 1)
+          : 1
       for (const k of track.keys) {
         const frame = Math.round(k.time * play.fps)
         if (track.prop === 'fillColor') {
@@ -309,7 +344,7 @@ export const toRiv = (scene: Scene, play: Timeline): Uint8Array => {
           emit(TYPE.keyFrameDouble, [
             [PROP.frame, frame],
             ...interpolationProps(k.ease),
-            [PROP.keyFrameDoubleValue, k.value],
+            [PROP.keyFrameDoubleValue, k.value * scale],
           ])
         }
       }
@@ -400,6 +435,9 @@ const serialize = (objects: readonly RivObject[]): Uint8Array => {
           break
         case 'color':
           w.color(value as number)
+          break
+        case 'bytes':
+          w.bytes(value as Uint8Array)
           break
       }
     }
