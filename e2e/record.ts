@@ -4,7 +4,14 @@
  *   bun run e2e/record.ts http://localhost:3100 reports/gift-effects.webm
  *
  * Sends T1 (hearts ×n, kiss) and then each T2–T5 gift one at a time, waiting for the effect to
- * finish so nothing queues. Playwright writes WebM; convert with ffmpeg for GitHub if needed.
+ * finish so nothing queues. Playwright writes WebM. The committed preview is a small GIF so a pull
+ * request can show it inline; the mp4 is a build output and is not committed. Encode both with:
+ *
+ *   ffmpeg -i reports/gift-effects.webm -c:v h264_videotoolbox -b:v 700k -pix_fmt yuv420p \
+ *     -movflags +faststart reports/gift-effects.mp4
+ *   ffmpeg -i reports/gift-effects.webm -vf "fps=5,scale=180:-1:flags=lanczos,split[s0][s1];\
+ *     [s0]palettegen=max_colors=32:stats_mode=diff[p];[s1][p]paletteuse=diff_mode=rectangle" \
+ *     reports/gift-effects.gif
  */
 import { copyFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
