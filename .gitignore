@@ -50,5 +50,6 @@ next-env.d.ts
 # blender scratch
 /art/.tmp
 
-# raw Playwright recordings (the encoded mp4/gif in reports/ are committed)
+# recordings: raw Playwright output, and the encoded mp4 (uploaded to a GitHub release instead)
 /reports/*.webm
+/reports/*.mp4
