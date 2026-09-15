@@ -9,6 +9,7 @@ import {
   type Event as RiveRuntimeEvent,
   type RiveFile,
 } from '@rive-app/react-webgl2'
+import type { GiftLayout } from '@rive/catalog'
 import { RIVE_CONTRACT } from '@rive/contract'
 import { useEffect, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -21,13 +22,24 @@ type Props = {
   readonly giftId: GiftId
   readonly riveFile: RiveFile
   readonly job: PlayingGift | null
-  readonly fit: Fit
+  readonly layout: GiftLayout
   readonly onFinished: (lane: LaneKey, seq: number) => void
   readonly className?: string
 }
 
 const hasName = (data: RiveRuntimeEvent['data']): data is { name: string } =>
   typeof data === 'object' && data !== null && 'name' in data
+
+const FIT: Record<GiftLayout['fit'], Fit> = {
+  cover: Fit.Cover,
+  contain: Fit.Contain,
+  fill: Fit.Fill,
+}
+
+const ALIGNMENT: Record<GiftLayout['align'], Alignment> = {
+  center: Alignment.Center,
+  bottom: Alignment.BottomCenter,
+}
 
 /**
  * One pooled Rive instance for a (lane, gift) pair. Mounted once and reused: every play fires the
@@ -43,11 +55,18 @@ export const RiveGiftEffect = ({
   giftId,
   riveFile,
   job,
-  fit,
+  layout: giftLayout,
   onFinished,
   className,
 }: Props) => {
-  const layout = useMemo(() => new Layout({ fit, alignment: Alignment.Center }), [fit])
+  const layout = useMemo(
+    () =>
+      new Layout({
+        fit: FIT[giftLayout.fit],
+        alignment: ALIGNMENT[giftLayout.align],
+      }),
+    [giftLayout.fit, giftLayout.align],
+  )
   const createdAt = useRef<number | null>(null)
   useEffect(() => {
     createdAt.current ??= performance.now()

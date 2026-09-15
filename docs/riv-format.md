@@ -45,6 +45,14 @@ Objects are streamed in a flat list; ownership is positional:
   the layer (`stateToId`). A `StateTransition`, `TransitionTriggerCondition` (`inputId` = input
   index in the state machine) or `StateMachineFireEvent` attaches to the state emitted just before.
 - `CubicEaseInterpolator` is a plain artboard component (no `parentId`).
+- **Embedded images**: `ImageAsset` (105: name 203, assetId 204, width 208, height 207) followed
+  by `FileAssetContents` (106: bytes 212, varuint length + WebP/PNG bytes) are written between the
+  `Backboard` and the `Artboard`. An `Image` drawable (100) references its asset with
+  `assetId` (206). **That value is the 0-based position of the asset in the file's asset list**
+  (`file.cpp` resolves referencers with `fileAssets[assetId]`), not a lookup of the
+  `ImageAsset.assetId` property; the writer sets both to the same index. Images draw at their
+  pixel size around `originX/Y` (380/381, default 0.5), so the writer folds the requested width
+  into `scaleX/scaleY` — including keyed scale values.
 
 ## The contract this writer emits (`rive/contract.ts`)
 
@@ -70,9 +78,14 @@ replayed by firing `play` again, and the runtime self-pauses while idle.
   a play timeline that never keys `root.opacity` would therefore stay invisible. `toRiv` adds a
   `root.opacity = 1` hold keyframe at frame 0 to every play timeline that does not key it.
   Found with the `/lab` page: a `.riv` with only a shape's `scaleX` keyed rendered nothing.
+- **Image asset ids are indices.** Numbering assets from 1 made every image show the _next_
+  asset's pixels and the last one nothing (a candy box drawn with the lid's image, a bottle drawn
+  as its cork). Found by screenshotting every effect in `/lab` after the switch to rendered art.
+- Negative `scaleX` on an `Image` mirrors it (used for the second curtain in `suite`).
 
 ## Not covered
 
-Data Binding (View Models), text, raster assets, bones/skins, listeners, audio, scripting. A
+Data Binding (View Models), text, out-of-band/referenced assets, bones/skins, listeners, audio,
+scripting. A
 designer-made `.riv` will normally expose View Model triggers instead of a trigger input + Rive
 Event; `src/features/gift/RiveGiftEffect.tsx` is the only place that has to change.

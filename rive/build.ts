@@ -1,17 +1,18 @@
 /**
  * Generates every gift asset:
- *   public/gifts/<id>.svg   list icons
+ *   public/gifts/<id>.webp  list icons (copied renders, or rasterized vector fallback)
  *   public/rive/<id>.riv    effects (T2–T5)
  *   public/rive/rive-<v>.wasm  self-hosted runtime (same version @rive-app/react-webgl2 pins)
  *   rive/manifest.json      sizes + wasm file name for the app and the tests
  *
  * Deterministic: re-running must not change any byte.
  */
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { TIER_SHAPE_BUDGET } from './contract'
+import { TIER_FILE_BUDGET_KB, TIER_SHAPE_BUDGET } from './contract'
 import { GIFT_DEFINITIONS } from './gifts'
 import { checkFaceSafe, shapeCount } from './writer/lint'
 import { toRiv } from './writer/toRiv'
@@ -31,6 +32,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const rootDir = join(here, '..')
 const publicRive = join(rootDir, 'public', 'rive')
 const publicGifts = join(rootDir, 'public', 'gifts')
+const rendersDir = join(rootDir, 'art', 'renders')
 
 export const buildAll = (): Manifest => {
   mkdirSync(publicRive, { recursive: true })
@@ -46,8 +48,28 @@ export const buildAll = (): Manifest => {
   const gifts: Manifest['gifts'][number][] = []
 
   for (const gift of GIFT_DEFINITIONS) {
-    const icon = `/gifts/${gift.id}.svg`
-    writeFileSync(join(publicGifts, `${gift.id}.svg`), toSvg(gift.icon, { width: 64, height: 64 }))
+    const icon = `/gifts/${gift.id}.webp`
+    const iconOut = join(publicGifts, `${gift.id}.webp`)
+    if (gift.iconRender) {
+      copyFileSync(join(rendersDir, `${gift.iconRender}.webp`), iconOut)
+    } else if (!gift.icon) {
+      throw new Error(`${gift.id}: needs icon or iconRender`)
+    } else {
+      // vector fallback until a render exists: rasterize the SVG icon with ImageMagick
+      const svg = join(publicGifts, `${gift.id}.svg`)
+      writeFileSync(svg, toSvg(gift.icon, { width: 128, height: 128 }))
+      execFileSync('magick', [
+        '-background',
+        'none',
+        '-density',
+        '192',
+        svg,
+        '-resize',
+        '128x128',
+        iconOut,
+      ])
+      rmSync(svg)
+    }
 
     if (!gift.effect) {
       gifts.push({ id: gift.id, tier: gift.tier, riv: null, icon })
@@ -62,6 +84,10 @@ export const buildAll = (): Manifest => {
       for (const v of checkFaceSafe(scene)) errors.push(`${gift.id}: ${v}`)
     }
     const bytes = toRiv(scene, play)
+    const kb = bytes.byteLength / 1024
+    if (gift.tier !== 1 && kb > TIER_FILE_BUDGET_KB[gift.tier]) {
+      errors.push(`${gift.id}: ${kb.toFixed(0)} KB exceeds the T${gift.tier} file budget`)
+    }
     writeFileSync(join(publicRive, `${gift.id}.riv`), bytes)
     gifts.push({
       id: gift.id,

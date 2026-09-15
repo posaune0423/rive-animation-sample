@@ -2,7 +2,8 @@ pre-commit:
   parallel: false
   jobs:
     - name: fmt
-      glob: '*.{ts,tsx,js,mjs,json,css,md,yml}'
+      # oxfmt rejects markdown, and a commit of only .md files would fail the whole hook
+      glob: '*.{ts,tsx,js,mjs,json,css,yml}'
       run: bunx oxfmt {staged_files}
       stage_fixed: true
     - name: lint

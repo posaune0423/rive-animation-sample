@@ -76,7 +76,28 @@ export type GroupNode = Transform & {
   readonly children: readonly SceneNode[]
 }
 
-export type SceneNode = ShapeNode | GroupNode
+/** A raster (PNG / JPEG / WebP) embedded in the .riv and drawn centered on (x, y). */
+export type ImageAsset = {
+  /** Unique within the scene; also the asset name in the file. */
+  readonly name: string
+  readonly bytes: Uint8Array
+  readonly mime: 'image/png' | 'image/jpeg' | 'image/webp'
+  /** Pixel size of the encoded image. */
+  readonly width: number
+  readonly height: number
+}
+
+export type ImageNode = Transform & {
+  readonly kind: 'image'
+  readonly id: string
+  readonly asset: ImageAsset
+  /** Display width in artboard units (height follows the asset's aspect ratio). */
+  readonly width: number
+  /** Skip the face-safe lint for images whose center is transparent (frames, halos). */
+  readonly transparentCenter?: boolean
+}
+
+export type SceneNode = ShapeNode | GroupNode | ImageNode
 
 export type Scene = {
   readonly artboard: string
@@ -102,6 +123,17 @@ export const shape = (
   fill?: Paint,
   stroke?: ShapeNode['stroke'],
 ): ShapeNode => ({ kind: 'shape', id, ...transform, geometry, fill, stroke })
+
+export const image = (
+  id: string,
+  transform: Transform,
+  asset: ImageAsset,
+  width: number,
+  options: { transparentCenter?: boolean } = {},
+): ImageNode => ({ kind: 'image', id, ...transform, asset, width, ...options })
+
+/** Display scale that maps the asset's pixel width onto `width` artboard units. */
+export const imageScale = (node: ImageNode): number => node.width / node.asset.width
 
 export const ellipse = (width: number, height = width): Geometry => ({
   kind: 'ellipse',
@@ -172,10 +204,22 @@ export function* walk(
   }
 }
 
+/** Drawables: shapes and images (groups are free). */
 export const countShapes = (target: Scene): number => {
   let n = 0
-  for (const { node } of walk(target.root)) if (node.kind === 'shape') n++
+  for (const { node } of walk(target.root)) if (node.kind !== 'group') n++
   return n
+}
+
+export const collectAssets = (target: Scene): ImageAsset[] => {
+  const seen = new Map<string, ImageAsset>()
+  for (const { node } of walk(target.root)) {
+    if (node.kind !== 'image') continue
+    const prev = seen.get(node.asset.name)
+    if (prev && prev !== node.asset) throw new Error(`asset name reused: ${node.asset.name}`)
+    seen.set(node.asset.name, node.asset)
+  }
+  return [...seen.values()]
 }
 
 export const findNode = (target: Scene, id: string): SceneNode | undefined => {

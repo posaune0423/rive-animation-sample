@@ -9,113 +9,113 @@
       "id": "heart",
       "tier": 1,
       "riv": null,
-      "icon": "/gifts/heart.svg"
+      "icon": "/gifts/heart.webp"
     },
     {
       "id": "kiss",
       "tier": 1,
       "riv": null,
-      "icon": "/gifts/kiss.svg"
+      "icon": "/gifts/kiss.webp"
     },
     {
       "id": "candy",
       "tier": 2,
       "riv": {
         "file": "/rive/candy.riv",
-        "bytes": 1169,
-        "shapes": 8
+        "bytes": 10502,
+        "shapes": 3
       },
-      "icon": "/gifts/candy.svg"
+      "icon": "/gifts/candy.webp"
     },
     {
       "id": "sparkling",
       "tier": 2,
       "riv": {
         "file": "/rive/sparkling.riv",
-        "bytes": 1848,
-        "shapes": 11
+        "bytes": 7768,
+        "shapes": 9
       },
-      "icon": "/gifts/sparkling.svg"
+      "icon": "/gifts/sparkling.webp"
     },
     {
       "id": "plush",
       "tier": 2,
       "riv": {
         "file": "/rive/plush.riv",
-        "bytes": 945,
-        "shapes": 8
+        "bytes": 7145,
+        "shapes": 1
       },
-      "icon": "/gifts/plush.svg"
+      "icon": "/gifts/plush.webp"
     },
     {
       "id": "bouquet",
       "tier": 3,
       "riv": {
         "file": "/rive/bouquet.riv",
-        "bytes": 4392,
-        "shapes": 27
+        "bytes": 28321,
+        "shapes": 10
       },
-      "icon": "/gifts/bouquet.svg"
+      "icon": "/gifts/bouquet.webp"
     },
     {
       "id": "perfume",
       "tier": 3,
       "riv": {
         "file": "/rive/perfume.riv",
-        "bytes": 3071,
-        "shapes": 15
+        "bytes": 14737,
+        "shapes": 12
       },
-      "icon": "/gifts/perfume.svg"
+      "icon": "/gifts/perfume.webp"
     },
     {
       "id": "ring",
       "tier": 3,
       "riv": {
         "file": "/rive/ring.riv",
-        "bytes": 1339,
-        "shapes": 6
+        "bytes": 271635,
+        "shapes": 27
       },
-      "icon": "/gifts/ring.svg"
+      "icon": "/gifts/ring.webp"
     },
     {
       "id": "diamond",
       "tier": 4,
       "riv": {
         "file": "/rive/diamond.riv",
-        "bytes": 2818,
-        "shapes": 14
+        "bytes": 129435,
+        "shapes": 33
       },
-      "icon": "/gifts/diamond.svg"
+      "icon": "/gifts/diamond.webp"
     },
     {
       "id": "suite",
       "tier": 4,
       "riv": {
         "file": "/rive/suite.riv",
-        "bytes": 5022,
-        "shapes": 32
+        "bytes": 30258,
+        "shapes": 3
       },
-      "icon": "/gifts/suite.svg"
+      "icon": "/gifts/suite.webp"
     },
     {
       "id": "palace",
       "tier": 5,
       "riv": {
         "file": "/rive/palace.riv",
-        "bytes": 9808,
-        "shapes": 71
+        "bytes": 21648,
+        "shapes": 29
       },
-      "icon": "/gifts/palace.svg"
+      "icon": "/gifts/palace.webp"
     },
     {
       "id": "myth",
       "tier": 5,
       "riv": {
         "file": "/rive/myth.riv",
-        "bytes": 12388,
+        "bytes": 49404,
         "shapes": 65
       },
-      "icon": "/gifts/myth.svg"
+      "icon": "/gifts/myth.webp"
     }
   ]
 }

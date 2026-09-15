@@ -38,9 +38,13 @@ export const TYPE = {
   stateTransition: 65,
   transitionTriggerCondition: 68,
   stateMachineFireEvent: 169,
+  // assets (backboard level) + image drawable
+  imageAsset: 105,
+  fileAssetContents: 106,
+  image: 100,
 } as const
 
-export type FieldType = 'uint' | 'bool' | 'string' | 'double' | 'color'
+export type FieldType = 'uint' | 'bool' | 'string' | 'double' | 'color' | 'bytes'
 
 type PropDef = { readonly key: number; readonly type: FieldType }
 const p = (key: number, type: FieldType): PropDef => ({ key, type })
@@ -112,6 +116,15 @@ export const PROP = {
   inputId: p(155, 'uint'),
   fireEventId: p(392, 'uint'),
   fireOccurs: p(393, 'uint'),
+  // assets: asset_base / file_asset_base / drawable_asset_base / file_asset_contents_base / image_base
+  assetName: p(203, 'string'),
+  assetId: p(204, 'uint'),
+  assetHeight: p(207, 'double'),
+  assetWidth: p(208, 'double'),
+  assetBytes: p(212, 'bytes'),
+  imageAssetId: p(206, 'uint'),
+  imageOriginX: p(380, 'double'),
+  imageOriginY: p(381, 'double'),
 } as const satisfies Record<string, PropDef>
 
 export type PropName = keyof typeof PROP
@@ -138,11 +151,12 @@ export const INTERPOLATION = { hold: 0, linear: 1, cubic: 2 } as const
 /** `shapes/paint/blend_mode.hpp` */
 export const BLEND_MODE = { srcOver: 3, screen: 14, lighten: 17, colorDodge: 18 } as const
 
-/** ToC field-type indices (`runtime_header.hpp`): bool is encoded as uint. */
+/** ToC field-type indices (`runtime_header.hpp`): bool is encoded as uint, bytes as string. */
 export const FIELD_INDEX: Record<FieldType, number> = {
   uint: 0,
   bool: 0,
   string: 1,
+  bytes: 1,
   double: 2,
   color: 3,
 }

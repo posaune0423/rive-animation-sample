@@ -1,23 +1,13 @@
+import { renderAsset } from '../assets'
 import { TIER_ARTBOARD, TIER_DURATION_SEC } from '../contract'
 import { palette } from '../palette'
 import { withAlpha } from '../writer/binary'
-import {
-  ellipse,
-  group,
-  polygon,
-  radial,
-  rect,
-  scene,
-  shape,
-  solid,
-  type SceneNode,
-} from '../writer/scene'
+import { ellipse, group, image, scene, shape, solid } from '../writer/scene'
 import { EASE, timeline } from '../writer/timeline'
 import { range, seeded, sparkle, type GiftDefinition } from './shared'
 
 const { width: W, height: H } = TIER_ARTBOARD[5]
 const DUR = TIER_DURATION_SEC[5]
-const ICON = 96
 
 /**
  * T5: 0.0–1.5 only light, things still small. 1.5–8.0 the subject; the center stays see-through.
@@ -26,113 +16,19 @@ const ICON = 96
 
 // ---- 夜の宮殿 100,000 -------------------------------------------------------------
 
-type Win = { readonly id: string; readonly x: number; readonly y: number }
+const PALACE_DUST = 28
+/** The render is 13:18; drawn at full width its sky half is transparent and the towers stay below 58 %. */
+const PALACE_W = W
+const PALACE_H = (PALACE_W * 720) / 520
+const PALACE_TOP = H - PALACE_H
 
-const palaceWindows = (): Win[] => {
-  const wins: Win[] = []
-  range(5).forEach(row =>
-    range(3).forEach(col =>
-      wins.push({ id: `wc${row}${col}`, x: 195 + (col - 1) * 20, y: 560 + row * 36 }),
-    ),
-  )
-  range(2).forEach(row =>
-    range(6).forEach(col =>
-      wins.push({ id: `wb${row}${col}`, x: 195 + (col - 2.5) * 46, y: 712 + row * 40 }),
-    ),
-  )
-  range(4).forEach(row => {
-    wins.push({ id: `wl${row}`, x: 90, y: 620 + row * 40 })
-    wins.push({ id: `wr${row}`, x: 300, y: 620 + row * 40 })
-  })
-  return wins
-}
-
-const palaceParts = (scale: number, withWindows: boolean): SceneNode[] => {
-  const s = scale
-  const body = withAlpha(palette.nightBlue, 0.92)
-  const parts: SceneNode[] = [
-    shape('body', { x: 195 * s, y: 770 * s }, rect(300 * s, 200 * s, 6 * s), solid(body)),
-    shape('towerL', { x: 90 * s, y: 700 * s }, rect(58 * s, 240 * s, 4 * s), solid(body)),
-    shape('towerR', { x: 300 * s, y: 700 * s }, rect(58 * s, 240 * s, 4 * s), solid(body)),
-    shape('towerC', { x: 195 * s, y: 650 * s }, rect(74 * s, 330 * s, 4 * s), solid(body)),
-    shape(
-      'roofL',
-      { x: 90 * s, y: 548 * s },
-      polygon(78 * s, 70 * s, 3),
-      solid(withAlpha(palette.night, 0.95)),
-    ),
-    shape(
-      'roofR',
-      { x: 300 * s, y: 548 * s },
-      polygon(78 * s, 70 * s, 3),
-      solid(withAlpha(palette.night, 0.95)),
-    ),
-    shape(
-      'roofC',
-      { x: 195 * s, y: 452 * s },
-      polygon(96 * s, 80 * s, 3),
-      solid(withAlpha(palette.night, 0.95)),
-    ),
-    shape('spire', { x: 195 * s, y: 400 * s }, rect(4 * s, 40 * s), solid(palette.gold)),
-    shape(
-      'gate',
-      { x: 195 * s, y: 830 * s },
-      rect(44 * s, 80 * s, 20 * s),
-      solid(withAlpha(palette.gold, 0.9)),
-    ),
-  ]
-  if (withWindows) {
-    for (const w of palaceWindows()) {
-      parts.push(
-        shape(
-          w.id,
-          { x: w.x * s, y: w.y * s, opacity: 0 },
-          rect(9 * s, 15 * s, 2 * s),
-          solid(palette.champagne),
-        ),
-      )
-    }
-  }
-  return parts
-}
-
-const PALACE_DUST = 24
-
+/** Rendered night palace (emissive windows baked in) rising from the bottom through gold dust. */
 export const palace: GiftDefinition = {
   id: 'palace',
   tier: 5,
-  icon: scene('palace', ICON, ICON, [
-    // 建物だけを収める（下端を切る）
-    group('gift', { x: 0, y: -46 }, palaceParts(0.2, false)),
-    shape('iconMoon', { x: 20, y: 22 }, ellipse(12), solid(palette.moon)),
-  ]),
+  iconRender: 'palace',
   effect: {
     scene: scene('palace', W, H, [
-      shape(
-        'glow',
-        { x: W / 2, y: 820, opacity: 0 },
-        ellipse(620, 360),
-        radial(
-          [0, 0],
-          [310, 0],
-          [
-            { position: 0, color: withAlpha(palette.champagneLight, 0.6) },
-            { position: 1, color: withAlpha(palette.champagneLight, 0) },
-          ],
-        ),
-      ),
-      shape(
-        'moonHalo',
-        { x: 70, y: 110, opacity: 0 },
-        ellipse(120),
-        solid(withAlpha(palette.moon, 0.15)),
-      ),
-      shape(
-        'moon',
-        { x: 70, y: 110, opacity: 0 },
-        ellipse(48),
-        solid(withAlpha(palette.moon, 0.9)),
-      ),
       ...range(PALACE_DUST).map(i =>
         shape(
           `dust${i}`,
@@ -141,7 +37,18 @@ export const palace: GiftDefinition = {
           solid(withAlpha(palette.champagne, 0.85)),
         ),
       ),
-      group('palace', { x: 0, y: 460 }, palaceParts(1, true)),
+      // starts fully below the frame, rises until its roofline touches the face-safe line
+      group('palace', { x: 0, y: H - PALACE_TOP }, [
+        image(
+          'palaceImg',
+          { x: W / 2, y: PALACE_TOP + PALACE_H / 2 },
+          renderAsset('palace'),
+          PALACE_W,
+          {
+            transparentCenter: true,
+          },
+        ),
+      ]),
     ]),
     play: (() => {
       const t = timeline('play', DUR)
@@ -150,39 +57,16 @@ export const palace: GiftDefinition = {
         [8.5, 1, EASE.softIn],
         [12, 0],
       ])
-      // 0–1.5 余白。光だけ
-      t.keys('glow', 'opacity', [
-        [0, 0, EASE.softOut],
-        [1.5, 0.6, EASE.inOut],
-        [6.5, 1, 'linear'],
-        [8.5, 1],
-      ])
-      for (const id of ['moon', 'moonHalo']) {
-        t.keys(id, 'opacity', [
-          [0.4, 0, EASE.softOut],
-          [2.0, 1],
-        ])
-      }
       // 下から宮殿がせり上がる
       t.keys('palace', 'y', [
-        [1.5, 460, EASE.out],
-        [4.2, 0],
+        [1.5, H - PALACE_TOP, EASE.out],
+        [4.6, 0],
       ])
-      // 窓が次々点灯
-      const rand = seeded(100_000)
-      const wins = palaceWindows()
-      wins.forEach((w, i) => {
-        const at = 3.2 + (i / wins.length) * 3.6 + rand() * 0.15
-        t.keys(w.id, 'opacity', [
-          [at, 0, EASE.out],
-          [at + 0.25, 1, EASE.inOut],
-          [at + 0.6, 0.75, EASE.inOut],
-          [at + 1.0, 1],
-        ])
-      })
       // 星や光の粒子が周囲を舞う
+      const rand = seeded(100_000)
       range(PALACE_DUST).forEach(i => {
-        const start = 1.8 + rand() * 5.5
+        // the first 1.5 s is dust only, then the palace rises through it
+        const start = 0.3 + rand() * 7.0
         const life = 2.2 + rand() * 1.8
         const x0 = 20 + rand() * (W - 40)
         t.keys(`dust${i}`, 'x', [
@@ -217,32 +101,19 @@ const ringStroke = (thickness: number) => ({
   thickness,
 })
 
+/**
+ * A rendered gold medallion turns slowly behind the streamer as a translucent halo (never more
+ * than 30 % opaque over the face), while vector light rings expand and gold dust streams across.
+ */
 export const myth: GiftDefinition = {
   id: 'myth',
   tier: 5,
-  icon: scene('myth', ICON, ICON, [
-    shape('iconRing', { x: 48, y: 50 }, ellipse(56), undefined, ringStroke(5)),
-    shape('iconRing2', { x: 48, y: 50 }, ellipse(34), undefined, ringStroke(3)),
-    sparkle('iconStar', 48, 50, 30, solid(palette.champagneLight)),
-    sparkle('iconStarS', 72, 26, 14, solid(palette.champagne)),
-    sparkle('iconStarT', 24, 74, 10, solid(palette.champagne)),
-  ]),
+  iconRender: 'myth_medallion',
   effect: {
     scene: scene('myth', W, H, [
-      shape(
-        'glow',
-        { x: W / 2, y: CENTER_Y, opacity: 0 },
-        ellipse(640),
-        radial(
-          [0, 0],
-          [320, 0],
-          [
-            { position: 0, color: withAlpha(palette.champagneLight, 0.55) },
-            { position: 0.55, color: withAlpha(palette.gold, 0.18) },
-            { position: 1, color: withAlpha(palette.gold, 0) },
-          ],
-        ),
-      ),
+      group('medallion', { x: W / 2, y: CENTER_Y, opacity: 0, scaleX: 0.6, scaleY: 0.6 }, [
+        image('medallionImg', {}, renderAsset('myth_medallion'), 560),
+      ]),
       ...range(RINGS).map(i =>
         shape(
           `ring${i}`,
@@ -280,13 +151,25 @@ export const myth: GiftDefinition = {
         [8.6, 1, EASE.softIn],
         [12, 0],
       ])
-      // 光の輪が中央から広がる。8秒付近がいちばん明るい
-      t.keys('glow', 'opacity', [
-        [0, 0, EASE.softOut],
-        [1.5, 0.35, EASE.inOut],
-        [8.0, 1, 'linear'],
-        [8.6, 1],
+      // 金のメダリオンが奥でゆっくり回り、透けたまま大きくなる
+      t.keys('medallion', 'opacity', [
+        [0.8, 0, EASE.softOut],
+        [2.5, 0.25, 'linear'],
+        [8.0, 0.3, EASE.softIn],
+        [11.5, 0],
       ])
+        .keys('medallion', 'rotation', [
+          [0, 0, 'linear'],
+          [12, 0.9],
+        ])
+        .keys('medallion', 'scaleX', [
+          [0.8, 0.6, EASE.softOut],
+          [8.0, 1.15],
+        ])
+        .keys('medallion', 'scaleY', [
+          [0.8, 0.6, EASE.softOut],
+          [8.0, 1.15],
+        ])
       range(RINGS).forEach(i => {
         const at = 1.5 + i * 1.3
         const life = 3.2

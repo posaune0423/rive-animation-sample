@@ -29,8 +29,16 @@ export const TIER_ARTBOARD: Record<Exclude<Tier, 1>, { width: number; height: nu
   5: { width: 390, height: 844 },
 }
 
-/** Max shapes per file, enforced by `riv:build`. */
+/** Max drawables (shapes + images) per file, enforced by `riv:build`. */
 export const TIER_SHAPE_BUDGET: Record<Exclude<Tier, 1>, number> = { 2: 20, 3: 40, 4: 80, 5: 150 }
+
+/** Max .riv size in KB (embedded WebP renders included), enforced by `riv:build`. */
+export const TIER_FILE_BUDGET_KB: Record<Exclude<Tier, 1>, number> = {
+  2: 150,
+  3: 320,
+  4: 420,
+  5: 420,
+}
 
 /**
  * Region of a full-frame artboard that must stay see-through (the streamer's face).

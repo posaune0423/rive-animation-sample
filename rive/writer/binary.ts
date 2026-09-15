@@ -58,6 +58,13 @@ export class ByteWriter {
     return this.u32(argb)
   }
 
+  /** varuint length + raw bytes (Rive `bytes` field, e.g. embedded asset contents). */
+  bytes(data: Uint8Array): this {
+    this.varuint(data.byteLength)
+    for (const b of data) this.chunks.push(b)
+    return this
+  }
+
   toUint8Array(): Uint8Array {
     return Uint8Array.from(this.chunks)
   }

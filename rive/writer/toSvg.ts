@@ -40,6 +40,12 @@ export const toSvg = (scene: Scene, size?: { width: number; height: number }): s
     if (node.kind === 'group') {
       return `<g${t}>${node.children.map(render).join('')}</g>`
     }
+    if (node.kind === 'image') {
+      const w = node.width
+      const h = (node.asset.height / node.asset.width) * w
+      const href = `data:${node.asset.mime};base64,${Buffer.from(node.asset.bytes).toString('base64')}`
+      return `<g${t}><image x="${fmt(-w / 2)}" y="${fmt(-h / 2)}" width="${fmt(w)}" height="${fmt(h)}" href="${href}"/></g>`
+    }
     const strokeAttrs = node.stroke
       ? `${paintAttrs(node.stroke.paint, 'stroke')} stroke-width="${fmt(node.stroke.thickness)}"`
       : 'stroke="none"'

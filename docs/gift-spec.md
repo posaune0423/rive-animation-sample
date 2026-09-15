@@ -29,6 +29,30 @@ Twelve gifts, cheapest first, grouped into five price tiers. Prices are in coins
   `NEXT_PUBLIC_T2_QUEUE_MAX` (5) drops the oldest T2; its chat row stays.
 - Pinned senders: max 3, highest tier first, expire after 10/30/60 s.
 
+## Layering
+
+The gift effect is the top layer of the stream. Bottom to top:
+
+| layer     | contents                                                                            |
+| --------- | ----------------------------------------------------------------------------------- |
+| video     | the stream                                                                          |
+| stream UI | the header with the pinned sender names, and the chat column (T1 rows, the T2 slot) |
+| button    | ギフトを送る                                                                        |
+| effects   | T3 centre and T4/T5 full frame, click-through so the button stays tappable          |
+| debug HUD | development only                                                                    |
+
+Each artboard is authored at a fixed size (T3 360x360, T4/T5 390x844) but the viewport is rarely
+that aspect, so how the artboard maps onto its canvas is per gift (`layout` in `rive/catalog.ts`):
+`contain` for the centred lane, `cover` for full-frame effects, and an override where the artwork
+runs to an edge — the suite window is `fill` so its rail and sill both stay on screen, the palace
+is `cover` aligned to the bottom so the empty sky is cropped instead of its base. Art that must
+not be cropped has to reach an artboard edge deliberately, or stay inside the middle 9:16.
+
+A full-frame effect owns the screen: while one plays the comment log fades out (500 ms) and comes
+back when it ends. Pinned sender names stay — they belong to the gifting — and sit at the top of
+the screen, clear of the subject. When both lanes run at once the full-frame effect paints over
+the centred one; full-frame effects keep the middle clear, so neither is hidden.
+
 ## Fade out
 
 The timeline ends at opacity 0 (T3–T5) or at the rest pose (T2). The wrapper additionally fades
@@ -39,9 +63,22 @@ The timeline ends at opacity 0 (T3–T5) or at the rest pose (T2). The wrapper a
 - Palette: deep red / champagne gold / amber / ice white (`rive/palette.ts`), on a night background.
 - Full-frame effects keep the face area (22–78 % × 18–58 %) free of anything with effective alpha
   > 0.35 at rest (`rive/writer/lint.ts`, enforced by `riv:build`).
-- Shape budget per file: T2 ≤ 20, T3 ≤ 40, T4 ≤ 80, T5 ≤ 150. No blend modes, no raster, no text.
-- The list icon and the effect share one drawing: each gift defines shapes once and emits both
-  `public/gifts/<id>.svg` and `public/rive/<id>.riv`.
+- Drawable budget per file: T2 ≤ 20, T3 ≤ 40, T4 ≤ 80, T5 ≤ 150 (images count as one each). File
+  budget: T2 ≤ 150 KB, T3 ≤ 320 KB, T4/T5 ≤ 420 KB. No blend modes, no text.
+- **The subjects are rendered, the light is vector.** Every gift's object (heart, lips, box,
+  bottle, bear, bouquet, flacon, ring, stone, room, palace, medallion) is a physically shaded
+  render from `art/blender/gifts/*.py` — one shared studio rig, camera and palette
+  (`art/blender/common.py`) so the twelve read as one set — exported as transparent WebP into
+  `art/renders/` and embedded in the `.riv`. Glows, sparkles, bubbles, mist, petals, dust and rings
+  stay vector so they scale and animate for free. Nothing else is drawn: no backdrop plates,
+  skylines or screen-wide glows — every effect is the transparent object itself plus its own
+  particles, so the stream is always visible around it.
+- Motion comes from parts, not frames: multi-part gifts render each part alone with the same
+  camera (`candy_box` + `candy_lid`, `sparkling_bottle` + `sparkling_cork`, `perfume_bottle` +
+  `perfume_cap`, `bouquet_closed` → `bouquet_open`, `suite_frame` + `suite_curtain` mirrored) and the timeline moves them. Objects that have to turn (`ring`,
+  `diamond`) are 24-frame turntables cross-faded as a flipbook (`rive/gifts/flipbook.ts`).
+- The list icon is the same render (`iconRender`), so the sheet, the chat row and the effect show
+  one object.
 
 ## Contract for a designer-made file
 
