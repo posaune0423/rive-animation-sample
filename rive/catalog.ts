@@ -14,6 +14,8 @@ export type GiftCatalogEntry = {
   /** Seconds the sender's name stays pinned above the chat (0 = not pinned). */
   readonly pinSec: number
   readonly rivSrc: string | null
+  /** The same effect compiled to Lottie JSON (`riv:build`), used by the /perf comparison. */
+  readonly lottieSrc: string | null
   readonly iconSrc: string
   /**
    * How the artboard maps onto its canvas. The artboards are authored at a fixed size but the
@@ -64,6 +66,7 @@ const entry = (id: GiftId, name: string, price: number, tier: Tier): GiftCatalog
   durationMs: Math.round(TIER_DURATION_SEC[tier] * 1000),
   pinSec: PIN_SEC_BY_TIER[tier],
   rivSrc: tier === 1 ? null : `/rive/${id}.riv`,
+  lottieSrc: tier === 1 ? null : `/lottie/${id}.json`,
   iconSrc: `/gifts/${id}.webp`,
   layout: LAYOUT_OVERRIDE[id] ?? LAYOUT_BY_TIER[tier],
 })

@@ -9,12 +9,14 @@
       "id": "heart",
       "tier": 1,
       "riv": null,
+      "lottie": null,
       "icon": "/gifts/heart.webp"
     },
     {
       "id": "kiss",
       "tier": 1,
       "riv": null,
+      "lottie": null,
       "icon": "/gifts/kiss.webp"
     },
     {
@@ -24,6 +26,11 @@
         "file": "/rive/candy.riv",
         "bytes": 10502,
         "shapes": 3
+      },
+      "lottie": {
+        "file": "/lottie/candy.json",
+        "bytes": 16277,
+        "layers": 7
       },
       "icon": "/gifts/candy.webp"
     },
@@ -35,6 +42,11 @@
         "bytes": 7768,
         "shapes": 9
       },
+      "lottie": {
+        "file": "/lottie/sparkling.json",
+        "bytes": 17712,
+        "layers": 12
+      },
       "icon": "/gifts/sparkling.webp"
     },
     {
@@ -44,6 +56,11 @@
         "file": "/rive/plush.riv",
         "bytes": 7145,
         "shapes": 1
+      },
+      "lottie": {
+        "file": "/lottie/plush.json",
+        "bytes": 10584,
+        "layers": 5
       },
       "icon": "/gifts/plush.webp"
     },
@@ -55,6 +72,11 @@
         "bytes": 28321,
         "shapes": 10
       },
+      "lottie": {
+        "file": "/lottie/bouquet.json",
+        "bytes": 46394,
+        "layers": 13
+      },
       "icon": "/gifts/bouquet.webp"
     },
     {
@@ -64,6 +86,11 @@
         "file": "/rive/perfume.riv",
         "bytes": 14737,
         "shapes": 12
+      },
+      "lottie": {
+        "file": "/lottie/perfume.json",
+        "bytes": 30481,
+        "layers": 15
       },
       "icon": "/gifts/perfume.webp"
     },
@@ -75,6 +102,11 @@
         "bytes": 271635,
         "shapes": 27
       },
+      "lottie": {
+        "file": "/lottie/ring.json",
+        "bytes": 375656,
+        "layers": 31
+      },
       "icon": "/gifts/ring.webp"
     },
     {
@@ -84,6 +116,11 @@
         "file": "/rive/diamond.riv",
         "bytes": 129435,
         "shapes": 33
+      },
+      "lottie": {
+        "file": "/lottie/diamond.json",
+        "bytes": 196180,
+        "layers": 36
       },
       "icon": "/gifts/diamond.webp"
     },
@@ -95,6 +132,11 @@
         "bytes": 30258,
         "shapes": 3
       },
+      "lottie": {
+        "file": "/lottie/suite.json",
+        "bytes": 41868,
+        "layers": 5
+      },
       "icon": "/gifts/suite.webp"
     },
     {
@@ -105,6 +147,11 @@
         "bytes": 21648,
         "shapes": 29
       },
+      "lottie": {
+        "file": "/lottie/palace.json",
+        "bytes": 55693,
+        "layers": 32
+      },
       "icon": "/gifts/palace.webp"
     },
     {
@@ -114,6 +161,11 @@
         "file": "/rive/myth.riv",
         "bytes": 49404,
         "shapes": 65
+      },
+      "lottie": {
+        "file": "/lottie/myth.json",
+        "bytes": 129875,
+        "layers": 69
       },
       "icon": "/gifts/myth.webp"
     }

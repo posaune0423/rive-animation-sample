@@ -44,6 +44,51 @@ To try it on a phone: `bun dev --hostname 0.0.0.0` and open `http://<your-ip>:30
 `/lab?src=/rive/candy.riv&w=192&h=192&loop=1` plays a single file on a plain background — handy
 for reviewing one effect or bisecting a rendering problem.
 
+### `/perf` — Rive vs Lottie on the live screen, under a gift pile-up
+
+`riv:build` also compiles every effect to Lottie (`public/lottie/<id>.json`, same scene graph and
+keyframes via `rive/writer/toLottie.ts`), so `/perf` can play the **same artwork and motion**
+through three runtimes on the **same phone-size stream screen** and measure while gifts pile up:
+
+- **Right**: the 390×844 live screen with the production lanes — the T2 slot at the top of the
+  chat, T3 in the centre, T4/T5 full frame — and the chat rows (T1 hearts collapse to `×n`, the log
+  steps aside for a full-frame effect).
+- **Left**: the viewers. Tap any of the twelve gifts, or fire a scenario: 全12種 (順に / ×3),
+  ♥ 連打 ×30, ダイヤ 連打 ×10, 神話 ×5 一斉, or a **storm** of random T2+ gifts at 5–100 per second
+  for 10–60 s (the load that separates the runtimes).
+- **Queue controls** (`src/features/bench/stage.ts` over the unit-tested
+  `src/features/bench/queue.ts`): キュー方針 (レーン毎 / 厳格), **レーン内の同時重なり上限**
+  (1 = production, up to 50 stacked effects per lane), 前演出終了後のディレイ, 溢れ方 (全部待つ /
+  古い待ちを捨てる / 新しい分を捨てる) and the per-lane waiting cap. Each lane shows what is
+  playing, how many wait and how many were dropped.
+- **Engine**: Rive (WebGL2, one shared offscreen context, the production path) · Lottie SVG ·
+  Lottie Canvas (`lottie-web` 5.13). Instances are pooled per lane × slot × gift, as in production.
+- **Live meter** (2 s window): fps, frame avg / p95 / max, long frames (>33 ms), dropped frames
+  against the estimated vsync, **main-thread ms per frame** (a MessageChannel task posted from
+  inside `requestAnimationFrame` lands after that frame's script + style/layout/paint), the share
+  of long frames spent _beyond_ the main thread (GPU / compositor waiting — browsers expose no
+  GPU counter, this is the closest observable signal), a CPU / GPU bottleneck verdict, Long
+  Animation Frames, JS heap, DOM nodes, pooled instance count and creation time.
+- **端末の模擬**: 描画解像度 DPR (1 / 2 / 3, applied to Rive and Lottie canvas — SVG follows the
+  display) and a per-frame main-thread burn (0–16 ms) that emulates the rest of an app on a slow
+  phone. To slow the CPU itself use DevTools → Performance → CPU 4× / 6× slowdown, or `BENCH_CPU`
+  below; to measure on a real phone run `bun dev --hostname 0.0.0.0` and open `/perf` there.
+- **記録に追加** snapshots a row (engine, scenario, queue config, device emulation, meter) into a
+  comparison table (copy as Markdown).
+
+Query params seed the controls: `/perf?engine=lottie-svg&policy=per-lane&overlap=10&overflow=drop-oldest&qmax=5&rate=50&seconds=10&dpr=3&cpu=8`.
+
+```bash
+bunx playwright test e2e/bench.spec.ts            # headless (SwiftShader): functional + reports/bench.md
+# real GPU numbers: run headed; rows accumulate in reports/bench.md
+BENCH_OVERLAP=3 bunx playwright test e2e/bench.spec.ts --headed
+BENCH_SCENARIO=storm BENCH_RATE=50 BENCH_OVERLAP=20 bunx playwright test e2e/bench.spec.ts --headed
+BENCH_SCENARIO=storm BENCH_RATE=20 BENCH_OVERLAP=10 BENCH_CPU=4 BENCH_DPR=3 bunx playwright test e2e/bench.spec.ts --headed  # ≈ low-end phone
+```
+
+`BENCH_SCENARIO` (all-x3 | storm), `BENCH_RATE`, `BENCH_SECONDS`, `BENCH_OVERLAP`, `BENCH_POLICY`,
+`BENCH_OVERFLOW`, `BENCH_QMAX`, `BENCH_CPU` (DevTools CPU throttling factor), `BENCH_DPR`.
+
 ## Check
 
 ```bash
@@ -63,9 +108,11 @@ art/renders/          rendered WebP parts and turntable frames (committed; input
 rive/                 generator: writer (binary/scene/timeline/images → .riv), 12 gift definitions,
                       flipbook helper, catalog (shared with the app), build script, manifest.json
 public/rive, gifts/   generated output (committed; `riv:build` is deterministic)
+public/lottie/        the same effects as Lottie JSON (`toLottie`), for the /perf comparison
 src/features/gift/    scheduler (pure reducer), GiftProvider (preload + pool), RiveGiftEffect
                       (one Rive instance per lane×gift), stage/chat/sheet UI, DebugHud, metrics
-e2e/                  Playwright specs (flow, queue policies, performance report)
+src/features/bench/   /perf: lane stage + queue reducers, frame meter, Rive / Lottie tiles, LiveStage, StageScreen
+e2e/                  Playwright specs (flow, queue policies, performance report, Rive vs Lottie bench)
 docs/                 format notes and the effect spec
 ```
 
