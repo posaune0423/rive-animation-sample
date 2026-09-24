@@ -4,7 +4,7 @@ import { giftById, type GiftId, type GiftLane } from '@rive/catalog'
 import { cn } from '@/lib/utils'
 import type { LaneKey } from '../gift/types'
 import type { BenchAsset } from './assets'
-import type { Engine } from './engines'
+import { usesSharedContext, type Engine } from './engines'
 import { LottieTile } from './LottieTile'
 import type { PlayingJob } from './queue'
 import { RiveTile } from './RiveTile'
@@ -89,7 +89,7 @@ export const LiveStage = ({ engine, state, assets, dpr, onReady, onFinished }: P
     }
     return (
       <div
-        key={`${t.key}@${dpr ?? 'auto'}`}
+        key={`${t.key}@${engine}@${dpr ?? 'auto'}`}
         data-lane={t.laneKey}
         data-slot={t.slot}
         data-gift={t.giftId}
@@ -101,7 +101,7 @@ export const LiveStage = ({ engine, state, assets, dpr, onReady, onFinished }: P
         )}
       >
         {asset.kind === 'rive' ? (
-          <RiveTile riveFile={asset.file} {...props} />
+          <RiveTile riveFile={asset.file} sharedContext={usesSharedContext(engine)} {...props} />
         ) : (
           <LottieTile
             renderer={engine === 'lottie-canvas' ? 'canvas' : 'svg'}

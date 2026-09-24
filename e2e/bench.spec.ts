@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { devices, expect, test, type Page } from '@playwright/test'
-import type { Engine } from '../src/features/bench/engines'
+import { ENGINES, type Engine } from '../src/features/bench/engines'
 import type { FrameMeterStats } from '../src/features/bench/frameMeter'
 import type { BenchRun } from '../src/features/bench/RunsTable'
 import type { StageState } from '../src/features/bench/stage'
@@ -20,7 +20,6 @@ import type { StageState } from '../src/features/bench/stage'
  * Headless Chromium rasterizes WebGL and canvas with SwiftShader (CPU), so run headed for a real
  * GPU: `BENCH_SCENARIO=storm BENCH_RATE=50 BENCH_OVERLAP=10 BENCH_CPU=4 BENCH_DPR=3 bunx playwright test e2e/bench.spec.ts --headed`
  */
-const ENGINES: readonly Engine[] = ['rive', 'lottie-svg', 'lottie-canvas']
 const SCENARIO_KIND = process.env.BENCH_SCENARIO === 'storm' ? 'storm' : 'all-x3'
 const RATE = Number(process.env.BENCH_RATE ?? 20)
 const SECONDS = Number(process.env.BENCH_SECONDS ?? 10)

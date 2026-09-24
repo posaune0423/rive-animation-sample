@@ -4,7 +4,7 @@ import { EventType, RiveFile } from '@rive-app/react-webgl2'
 import { GIFTS, giftById, type GiftId } from '@rive/catalog'
 import { useEffect, useState } from 'react'
 import { preloadRiveRuntime } from '../gift/rive/runtime'
-import type { Engine } from './engines'
+import { isRive, type Engine } from './engines'
 
 /** A parsed animation file, loaded once per (engine family, gift) and shared by every tile. */
 export type BenchAsset =
@@ -56,7 +56,7 @@ const loadLottie = async (giftId: GiftId): Promise<BenchAsset> => {
 }
 
 export const loadBenchAsset = (engine: Engine, giftId: GiftId): Promise<BenchAsset> => {
-  const family = engine === 'rive' ? 'rive' : 'lottie'
+  const family = isRive(engine) ? 'rive' : 'lottie'
   const key = `${family}:${giftId}`
   let promise = cache.get(key)
   if (!promise) {
@@ -77,7 +77,7 @@ const BENCH_GIFTS = GIFTS.filter(g => g.rivSrc && g.lottieSrc).map(g => g.id)
 
 /** Every T2+ gift for one engine, loaded up front like the production GiftProvider does. */
 export const useBenchAssets = (engine: Engine): AssetsState => {
-  const family = engine === 'rive' ? 'rive' : 'lottie'
+  const family = isRive(engine) ? 'rive' : 'lottie'
   const [loaded, setLoaded] = useState<{ readonly family: string; readonly state: AssetsState }>({
     family: '',
     state: { assets: {}, total: BENCH_GIFTS.length, errors: [] },

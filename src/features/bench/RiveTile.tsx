@@ -29,7 +29,8 @@ const hasName = (data: RiveRuntimeEvent['data']): data is { name: string } =>
 
 /**
  * One pooled Rive instance for a bench slot — the same control path as `RiveGiftEffect`
- * (shared parsed file, shared offscreen WebGL2 context, `play` trigger, `finished` event).
+ * (shared parsed file, `play` trigger, `finished` event). `sharedContext` picks Rive's
+ * `useOffscreenRenderer` (see `usesSharedContext`).
  */
 export const RiveTile = ({
   giftId,
@@ -40,7 +41,8 @@ export const RiveTile = ({
   job,
   onReady,
   onFinished,
-}: TileProps & { readonly riveFile: RiveFile }) => {
+  sharedContext,
+}: TileProps & { readonly riveFile: RiveFile; readonly sharedContext: boolean }) => {
   const layout = useMemo(
     () => new Layout({ fit: FIT[giftLayout.fit], alignment: ALIGNMENT[giftLayout.align] }),
     [giftLayout.fit, giftLayout.align],
@@ -60,7 +62,7 @@ export const RiveTile = ({
       onLoad: () => onReady(tileKey, performance.now() - (createdAt.current ?? performance.now())),
     },
     {
-      useOffscreenRenderer: true,
+      useOffscreenRenderer: sharedContext,
       customDevicePixelRatio:
         dpr ?? Math.min(typeof window === 'undefined' ? 1 : window.devicePixelRatio, 2),
     },
