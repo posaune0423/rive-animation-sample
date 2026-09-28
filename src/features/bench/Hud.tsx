@@ -3,6 +3,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import type { FrameMeterStats } from './frameMeter'
+import { smoothness } from './verdict'
 
 const BOTTLENECK_LABEL = {
   idle: '余裕あり',
@@ -21,6 +22,7 @@ export const Hud = ({ stats }: { readonly stats: FrameMeterStats }) => (
         </div>
         <div className="text-[10px] text-zinc-400">fps（vsync ≈ {stats.vsyncMs || '-'} ms）</div>
       </div>
+      {stats.samples > 0 && <Verdict fps={stats.fps} />}
       <Sparkline history={stats.history} />
     </div>
     <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 text-[11px]">
@@ -53,6 +55,23 @@ export const Hud = ({ stats }: { readonly stats: FrameMeterStats }) => (
     </dl>
   </Section>
 )
+
+const Verdict = ({ fps }: { readonly fps: number }) => {
+  const { label, tone } = smoothness(fps)
+  return (
+    <span
+      data-testid="bench-verdict"
+      className={cn(
+        'rounded px-2 py-1 text-[12px] font-semibold whitespace-nowrap',
+        tone === 'ok' && 'bg-lime-300/15 text-lime-200',
+        tone === 'warn' && 'bg-amber-300/15 text-amber-200',
+        tone === 'bad' && 'bg-rose-400/15 text-rose-200',
+      )}
+    >
+      {label}
+    </span>
+  )
+}
 
 const Sparkline = ({ history }: { readonly history: readonly number[] }) => {
   const ref = useRef<HTMLCanvasElement>(null)

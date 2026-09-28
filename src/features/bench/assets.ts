@@ -5,6 +5,7 @@ import { GIFTS, giftById, type GiftId } from '@rive/catalog'
 import { useEffect, useState } from 'react'
 import { preloadRiveRuntime } from '../gift/rive/runtime'
 import { isRive, type Engine } from './engines'
+import { markAssetsReady, trackRuntime } from './startup'
 
 /** A parsed animation file, loaded once per (engine family, gift) and shared by every tile. */
 export type BenchAsset =
@@ -44,8 +45,11 @@ const loadLottie = async (giftId: GiftId): Promise<BenchAsset> => {
   const src = giftById(giftId).lottieSrc
   if (!src) throw new Error(`${giftId} has no Lottie file`)
   const t0 = performance.now()
-  const res = await fetch(src)
-  const text = await res.text()
+  // the runtime is fetched up front like Rive's WASM, so first-effect time compares like for like
+  const [text] = await Promise.all([
+    fetch(src).then(res => res.text()),
+    trackRuntime(() => import('lottie-web')),
+  ])
   const data = JSON.parse(text) as object
   return {
     kind: 'lottie',
@@ -84,9 +88,11 @@ export const useBenchAssets = (engine: Engine): AssetsState => {
   })
   useEffect(() => {
     let cancelled = false
+    let done = 0
     for (const giftId of BENCH_GIFTS) {
       loadBenchAsset(engine, giftId)
         .then(asset => {
+          if (++done === BENCH_GIFTS.length) markAssetsReady()
           if (cancelled) return
           setLoaded(prev => {
             const base =
