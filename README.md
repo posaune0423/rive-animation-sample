@@ -1,5 +1,8 @@
 # rive-animation-sample
 
+**Live demo: https://posaune0423.github.io/rive-animation-sample/** — the stream mock on `/`, the
+Rive vs Lottie bench on [`/perf/`](https://posaune0423.github.io/rive-animation-sample/perf/).
+
 A proof of concept for live-streaming gift effects rendered with [Rive](https://rive.app):
 twelve gifts in five price tiers, a queue that never overlaps full-screen effects, and
 measurements of file size, load time and frame pacing.
@@ -88,6 +91,21 @@ BENCH_SCENARIO=storm BENCH_RATE=20 BENCH_OVERLAP=10 BENCH_CPU=4 BENCH_DPR=3 bunx
 
 `BENCH_SCENARIO` (all-x3 | storm), `BENCH_RATE`, `BENCH_SECONDS`, `BENCH_OVERLAP`, `BENCH_POLICY`,
 `BENCH_OVERFLOW`, `BENCH_QMAX`, `BENCH_CPU` (DevTools CPU throttling factor), `BENCH_DPR`.
+
+## Deploy
+
+`main` is exported as a static site and published to GitHub Pages by
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml). The project site lives under
+`/rive-animation-sample/`, so the build sets `NEXT_PUBLIC_BASE_PATH`; `next/link` picks it up from
+`basePath`, and the files we fetch ourselves (`.riv`, Lottie JSON, WebP icons, `rive.wasm`) carry
+it from the same variable in `rive/catalog.ts` and `src/features/gift/rive/runtime.ts`.
+
+To reproduce the published build locally:
+
+```bash
+NEXT_OUTPUT_EXPORT=true NEXT_PUBLIC_BASE_PATH=/rive-animation-sample bun run build
+npx serve out   # or any static server; open /perf/
+```
 
 ## Check
 

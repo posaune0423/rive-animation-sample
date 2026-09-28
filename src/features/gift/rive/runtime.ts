@@ -5,7 +5,7 @@ import manifest from '@rive/manifest.json'
 import { recordWasm } from '../metrics'
 
 /** Self-hosted `rive.wasm`, same version as the `@rive-app/webgl2` the React runtime pins. */
-export const WASM_URL: string = manifest.wasm.file
+export const WASM_URL: string = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}${manifest.wasm.file}`
 
 let started: Promise<void> | null = null
 

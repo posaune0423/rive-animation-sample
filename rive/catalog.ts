@@ -57,6 +57,12 @@ const LANE_BY_TIER: Record<Tier, GiftLane> = {
 
 const PIN_SEC_BY_TIER: Record<Tier, number> = { 1: 0, 2: 0, 3: 10, 4: 30, 5: 60 }
 
+/**
+ * Prefix for files we fetch ourselves. Next's `basePath` does not touch a hand-written URL, so the
+ * asset paths carry it explicitly; it is empty everywhere except the GitHub Pages build.
+ */
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
 const entry = (id: GiftId, name: string, price: number, tier: Tier): GiftCatalogEntry => ({
   id,
   name,
@@ -65,9 +71,9 @@ const entry = (id: GiftId, name: string, price: number, tier: Tier): GiftCatalog
   lane: LANE_BY_TIER[tier],
   durationMs: Math.round(TIER_DURATION_SEC[tier] * 1000),
   pinSec: PIN_SEC_BY_TIER[tier],
-  rivSrc: tier === 1 ? null : `/rive/${id}.riv`,
-  lottieSrc: tier === 1 ? null : `/lottie/${id}.json`,
-  iconSrc: `/gifts/${id}.webp`,
+  rivSrc: tier === 1 ? null : `${BASE}/rive/${id}.riv`,
+  lottieSrc: tier === 1 ? null : `${BASE}/lottie/${id}.json`,
+  iconSrc: `${BASE}/gifts/${id}.webp`,
   layout: LAYOUT_OVERRIDE[id] ?? LAYOUT_BY_TIER[tier],
 })
 

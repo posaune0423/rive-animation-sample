@@ -54,3 +54,6 @@ next-env.d.ts
 /reports/*.webm
 /reports/*.mp4
 /reports/*.gif
+
+# static export output
+/out
