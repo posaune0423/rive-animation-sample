@@ -1,14 +1,21 @@
 'use client'
 
+import { deviceById, type DeviceId } from './devices'
 import { ENGINE_LABEL, type Engine } from './engines'
 import type { FrameMeterStats } from './frameMeter'
 import { Toggle } from './Hud'
+import { loadById, type LoadId } from './loads'
+import { smoothness } from './verdict'
 import type { StageConfig } from './stage'
 
 /** One recorded measurement, shown in the comparison table and exposed to Playwright. */
 export type BenchRun = {
   readonly at: string
   readonly engine: Engine
+  /** the phone emulated (see devices.ts) */
+  readonly device: DeviceId
+  /** the load level run, if one was */
+  readonly load: LoadId | null
   /** What was sent (e.g. "全12種 ×3", "神話 ×5") */
   readonly scenario: string
   readonly config: StageConfig
@@ -25,7 +32,11 @@ export type BenchRun = {
 }
 
 const COLUMNS = [
+  'device',
+  'load',
   'engine',
+  'fps',
+  'verdict',
   'scenario',
   'policy',
   'overlap',
@@ -33,7 +44,6 @@ const COLUMNS = [
   'overflow',
   'dpr',
   'cpu load ms',
-  'fps',
   'p95 ms',
   'long',
   'dropped fr',
@@ -50,7 +60,11 @@ const COLUMNS = [
 ] as const
 
 export const runCells = (r: BenchRun): string[] => [
+  deviceById(r.device).label,
+  r.load ? loadById(r.load).label : '-',
   ENGINE_LABEL[r.engine],
+  String(r.stats.fps),
+  smoothness(r.stats.fps).label,
   r.scenario,
   r.config.policy,
   String(r.config.overlap),
@@ -58,7 +72,6 @@ export const runCells = (r: BenchRun): string[] => [
   r.config.overflow,
   r.render.dpr === null ? 'auto' : String(r.render.dpr),
   String(r.render.cpuLoadMs),
-  String(r.stats.fps),
   String(r.stats.frameP95Ms),
   String(r.stats.longFrames),
   String(r.stats.droppedFrames),

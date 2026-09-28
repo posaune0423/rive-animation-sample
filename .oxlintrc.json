@@ -22,7 +22,14 @@
     "no-underscore-dangle": [
       "warn",
       {
-        "allow": ["__giftMetrics", "__benchMetrics", "__benchQueue", "__benchStage", "__benchRuns"]
+        "allow": [
+          "__giftMetrics",
+          "__benchMetrics",
+          "__benchQueue",
+          "__benchStage",
+          "__benchRuns",
+          "__benchStartup"
+        ]
       }
     ],
     "no-await-in-loop": "off",
