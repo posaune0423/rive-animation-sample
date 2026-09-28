@@ -56,41 +56,43 @@ through three runtimes on the **same phone-size stream screen** and measure whil
 - **Right**: the 390×844 live screen with the production lanes — the T2 slot at the top of the
   chat, T3 in the centre, T4/T5 full frame — and the chat rows (T1 hearts collapse to `×n`, the log
   steps aside for a full-frame effect).
-- **Left**: the viewers. Tap any of the twelve gifts, or fire a scenario: 全12種 (順に / ×3),
-  ♥ 連打 ×30, ダイヤ 連打 ×10, 神話 ×5 一斉, or a **storm** of random T2+ gifts at 5–100 per second
-  for 10–60 s (the load that separates the runtimes).
-- **Queue controls** (`src/features/bench/stage.ts` over the unit-tested
-  `src/features/bench/queue.ts`): キュー方針 (レーン毎 / 厳格), **レーン内の同時重なり上限**
-  (1 = production, up to 50 stacked effects per lane), 前演出終了後のディレイ, 溢れ方 (全部待つ /
-  古い待ちを捨てる / 新しい分を捨てる) and the per-lane waiting cap. Each lane shows what is
-  playing, how many wait and how many were dropped.
-- **Engine**: Rive (WebGL2, one shared offscreen context, the production path) · Lottie SVG ·
-  Lottie Canvas (`lottie-web` 5.13). Instances are pooled per lane × slot × gift, as in production.
-- **Live meter** (2 s window): fps, frame avg / p95 / max, long frames (>33 ms), dropped frames
-  against the estimated vsync, **main-thread ms per frame** (a MessageChannel task posted from
-  inside `requestAnimationFrame` lands after that frame's script + style/layout/paint), the share
-  of long frames spent _beyond_ the main thread (GPU / compositor waiting — browsers expose no
-  GPU counter, this is the closest observable signal), a CPU / GPU bottleneck verdict, Long
-  Animation Frames, JS heap, DOM nodes, pooled instance count and creation time.
-- **端末の模擬**: 描画解像度 DPR (1 / 2 / 3, applied to Rive and Lottie canvas — SVG follows the
-  display) and a per-frame main-thread burn (0–16 ms) that emulates the rest of an app on a slow
-  phone. To slow the CPU itself use DevTools → Performance → CPU 4× / 6× slowdown, or `BENCH_CPU`
-  below; to measure on a real phone run `bun dev --hostname 0.0.0.0` and open `/perf` there.
-- **記録に追加** snapshots a row (engine, scenario, queue config, device emulation, meter) into a
-  comparison table (copy as Markdown).
+- **1. 想定する端末** (`src/features/bench/devices.ts`): この PC / 最新 iPhone (17 Pro) /
+  数年前の iPhone (13) / 旧型 iPhone (11, the oldest iOS 27 supports) / 低価格 Android. A profile
+  sets the render resolution, caps `requestAnimationFrame` at 60 Hz as iOS Safari does on a 120 Hz
+  screen (`frameCap.ts`), and for iPhones hides `WEBGL_shader_pixel_local_storage` so Rive takes
+  the fallback path it takes on Safari (`webglPath.ts`). Its CPU factor (M4 Pro → the phone's
+  single-core speed) is applied by the e2e through the DevTools protocol; by hand, DevTools →
+  Performance → CPU. The GPU is not emulated, so real phones do worse on GPU-bound work.
+- **2. 配信の混み具合** (`src/features/bench/loads.ts`): 本番想定 (3 effects on screen, 5 gifts/s) ·
+  盛り上がり (9, 10/s) · イベント終盤 (30, 30/s) · 限界 (60, 50/s). Viewers keep sending every effect
+  gift in catalog order for 10 s — the same sequence for every engine; past 5 waiting per lane the
+  oldest are dropped.
+- **3. Engine**: Rive (WebGL2, one shared offscreen context — the production path — or one context
+  per canvas) · Lottie SVG · Lottie Canvas (`lottie-web` 5.13). Instances are pooled per lane ×
+  slot × gift, as in production. The panel also shows the cold start: time until every effect and
+  the runtime are ready, until the first effect draws, and bytes transferred.
+- **Live meter** (2 s window): fps with a plain verdict (なめらか ≥ 55 / ややカクつく ≥ 40 /
+  カクつく ≥ 25 / コマ送り), frame avg / p95 / max, long frames (>33 ms), **main-thread ms per
+  frame** (a MessageChannel task posted from inside `requestAnimationFrame` lands after that
+  frame's script + style/layout/paint), the share of long frames spent _beyond_ the main thread
+  (GPU / compositor waiting — browsers expose no GPU counter), a CPU / GPU bottleneck verdict,
+  Long Animation Frames, JS heap, DOM nodes.
+- **詳細設定**: single gifts and fixed scenarios (全12種, ♥ 連打 ×30, ダイヤ 連打 ×10, 神話 ×5 一斉),
+  連投 at any rate, the queue controls (`stage.ts` over the unit-tested `queue.ts`: キュー方針,
+  レーン内の同時重なり上限, 前演出終了後のディレイ, 溢れ方, 待機上限), DPR and a per-frame
+  main-thread burn.
+- **記録に追加** snapshots a row into a comparison table (copy as Markdown).
 
-Query params seed the controls: `/perf?engine=lottie-svg&policy=per-lane&overlap=10&overflow=drop-oldest&qmax=5&rate=50&seconds=10&dpr=3&cpu=8`.
+Query params seed the controls: `/perf?device=iphone-11&engine=lottie-canvas` (plus the raw knobs
+`policy`, `overlap`, `gap`, `overflow`, `qmax`, `rate`, `seconds`, `dpr`, `cpu`).
 
 ```bash
-bunx playwright test e2e/bench.spec.ts            # headless (SwiftShader): functional + reports/bench.md
-# real GPU numbers: run headed; rows accumulate in reports/bench.md
-BENCH_OVERLAP=3 bunx playwright test e2e/bench.spec.ts --headed
-BENCH_SCENARIO=storm BENCH_RATE=50 BENCH_OVERLAP=20 bunx playwright test e2e/bench.spec.ts --headed
-BENCH_SCENARIO=storm BENCH_RATE=20 BENCH_OVERLAP=10 BENCH_CPU=4 BENCH_DPR=3 bunx playwright test e2e/bench.spec.ts --headed  # ≈ low-end phone
+# every phone × load level × engine, plus a cold load on slow 4G per phone → reports/bench.md
+bunx playwright test e2e/bench.spec.ts --headed
+BENCH_DEVICES=iphone-11 BENCH_LOADS=heavy BENCH_ENGINES=rive,lottie-canvas bunx playwright test e2e/bench.spec.ts --headed
 ```
 
-`BENCH_SCENARIO` (all-x3 | storm), `BENCH_RATE`, `BENCH_SECONDS`, `BENCH_OVERLAP`, `BENCH_POLICY`,
-`BENCH_OVERFLOW`, `BENCH_QMAX`, `BENCH_CPU` (DevTools CPU throttling factor), `BENCH_DPR`.
+Run headed: headless Chromium draws WebGL and canvas on the CPU (SwiftShader).
 
 ## Deploy
 
