@@ -19,7 +19,12 @@
     "react/jsx-no-useless-fragment": "off",
     "import/no-unassigned-import": ["error", { "allow": ["**/*.css"] }],
     "nextjs/no-img-element": "off",
-    "no-underscore-dangle": ["warn", { "allow": ["__giftMetrics"] }],
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["__giftMetrics", "__benchMetrics", "__benchQueue", "__benchStage", "__benchRuns"]
+      }
+    ],
     "no-await-in-loop": "off",
     "oxc/no-map-spread": "off"
   },
